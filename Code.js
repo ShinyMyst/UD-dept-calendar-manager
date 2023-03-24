@@ -1,41 +1,71 @@
+// ###################
+// Configuration Values
+// ###################
 const spreadsheetId = 'ID';
 const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
 const entrySheet = spreadsheet.getSheetByName("Enter_Date");
+const entryHeadingsRange = "A1:M1";
+const entryRange = "A2:M25";
 
-function printIf() {
-  var entries = entrySheet.getRange("A2:M25").getValues();
+
+// Every n hours
+// Pull Data from Entry Page
+// Execute commands if box checked.
+// (Data verification on Excel for keys)
+// If date is span, add multiple entries (account for keys)
+// If date is single, add single entry (no keys given)
+// Add Entries to Excel
+// Add Entries to Gcal (always span)
+
+// Verify Groupings are retained
+// Determine how to run function at set intervals
+// Determine how to run functions on edit for Gcal and Spreadsheet
+// Highlight entries that are duplicates in name and date
+
+// Main
+function main() {
+  processNewEntries();
+  sortExcel()
+};
+
+
+// Pulls all entries from entry page and checks the checkbox.
+// Clears entry after added.
+function processNewEntries(){
+  const headings = entrySheet.getRange(entryHeadingsRange).getValues()[0];
+  var entries = entrySheet.getRange(entryRange).getValues();
+
   for (const row of entries) {
     var eventData = row
+
     if (eventData[0] == true) {
-      console.log(eventData)}
+      var dataDict = Object.fromEntries(headings.map((key, i) => [key, eventData[i]]));
+      updateExcel(dataDict)
+      updateGcal(dataDict)
     }
-
-};
-
-// Adds a new to sheets and Gcal
-
-// Adding event is the same for both calendars 
-// EXCEPT, the non expanded one does a range and makes multiple entries.
-// So call this once for regular calendar and a for loop for other calendar
-//function addEvent(sheet, date, event_info) {
-
-//};
-
-// Add to Gcal
-
-
-function myFunction(targetRange) {
-  const values = Sheets.Spreadsheets.Values.get(spreadsheetId, targetRange).values;
-  return values
+  }
 };
 
 
-function checkRange() {
-  console.log(entrySheet.getLastRow());
+// Creates an entry on Excel with given data.
+// Does not check for duplicate entries.
+function updateExcel(dataDict){
 
 };
 
-function test() {
-  targetRange = 'Enter_Date!A2:N2';
-  console.log(myFunction(targetRange))
+// Creates an entry on Excel with given data.
+// Does not check for duplicate entries.
+function updateGcal(dataDict){
+
+};
+
+// Deletes entry on specified row.
+function deleteEntry(line){
+
+};
+
+// Sorts dates in the proper order & ensures groupings are retained correctly.
+// Assumes date values have been properly updated.
+function sortExcel(){
+  
 };
