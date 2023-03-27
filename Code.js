@@ -1,13 +1,24 @@
+// This doc is in DIRE need of a major refactor.
+// Use class to help refactor
+
 // ###################
 // Configuration Values
 // ###################
+
+// SpreadSheet Data
 const spreadsheetId = 'ID';
 const spreadsheet = SpreadsheetApp.openById('ID');
-const entrySheet = spreadsheet.getSheetByName("Enter_Date");
+
+// Calendar Page Info
 const calendarSheet = spreadsheet.getSheetByName("Calendar")
-const entryHeadingsRange = "A1:M1";
 const calendarHeadingsRange = 'A1:K1'
-const entryRange = "A2:M25";
+
+// Entry Page Info
+const entrySheet = spreadsheet.getSheetByName("Enter_Date");
+const entryHeadingsRange = "A1:M1";
+const entryDataRange = "A2:M25";
+
+// Other Info
 const months = [
   "January", 
   "February", 
@@ -20,19 +31,10 @@ const months = [
   "September", 
   "October", 
   "November", 
-  "December"
-];
+  "December"];
 
 
 
-// Every n hours
-// Pull Data from Entry Page
-// Execute commands if box checked.
-// (Data verification on Excel for keys)
-// If date is span, add multiple entries (account for keys)
-// If date is single, add single entry (no keys given)
-// Add Entries to Excel
-// Add Entries to Gcal (always span)
 
 // Verify Groupings are retained
 // Determine how to run function at set intervals
@@ -45,84 +47,101 @@ const months = [
 // Excel should validate data.
 // Headings should be made by cell reference.
 
-// Main
+// ###################
+// Main Functions 
+// ###################
+// Assumes dates and values have been data validated by Excel
 function main() {
   processNewEntries();
   sortSheet()
 };
 
 
-// Pulls all entries from entry page that are checked.
-// Goes row by row adding them to an entry dict.
-// Clears row and dict after each row added.
+// Pulls all checked entries from entry page.  Creates new rows and Gcal entries for these entries then remove them from page.
 function processNewEntries(){
   const entryHeadings = entrySheet.getRange(entryHeadingsRange).getValues()[0]; // get values returns a list of rows
-  var entries = entrySheet.getRange(entryRange).getValues();
+  var entries = entrySheet.getRange(entryDataRange).getValues();
 
   for (const row of entries) {
     var eventData = row
 
     if (eventData[0] == true) {
       var entryDict = Object.fromEntries(entryHeadings.map((key, i) => [key, eventData[i]]));
-      updateExcel(entryDict)
+      updateSheets(entryDict)
       updateGcal(entryDict)
       // Delete row after it's added
     }
   }
 };
 
-
-
-// Creates an entry on Excel with given data.
-// Does not check for duplicate entries.
-// Assumes dates and values have been data validated by Excel
-function updateExcel(entryDict){
+// ###################
+// Adding Entries to Sheets
+// ###################
+// Creates a new entry on Sheets.
+function updateSheets(entryDict){
   var calendarDict = createCalendarDict(entryDict)
 
+  // Events that are already in place.
+  var eventMatrix = calendarSheet.getRange("B:B").getValues()
+  var eventList = eventMatrix.map(function(row) {
+    return row[0];
+      });
+  console.log(eventList)
+  // Generate this at the start of adding entries then append instead of regenerating.
+
+  // Create an if else for whether or not the entry is a duplicate to proceed.
+  // Make it a function?
+
+  const START = entryDict['Start Date']
+  const END = entryDict['End Date']
+
   // Singular Month
-  if (months.includes(entryDict['Start Date'])) {
-    var monthName = entryDict['Start Date']
+  if (months.includes(START)) {
+    var monthName = START
     var date = new Date(`${monthName} 1, ${new Date().getFullYear()}`);
-    calendarDict['Tentative Dates'] = entryDict['Start Date']
+    calendarDict['Tentative Dates'] = START
     calendarDict['Sorting'] = date.getTime() - 1
   }
   // Singular Date
-  else if (entryDict['Start Date'].getTime() == entryDict['End Date'].getTime()) {
-    calendarDict['Tentative Dates'] = entryDict['Start Date']
-    calendarDict['Sorting'] = entryDict['Start Date'].getTime()
+  else if (START.getTime() == END.getTime()) {
+    calendarDict['Tentative Dates'] = START
+    calendarDict['Sorting'] = START.getTime()
   } 
   // Date Range
   else {
-    for (let date = new Date(entryDict['Start Date']); date <= entryDict['End Date']; date.setDate(date.getDate() + 1)) {
+    for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
       calendarDict['Tentative Dates'] = date
       calendarDict['Sorting'] = date.getTime()
       addRow(calendarDict)
     }
 
-    var startDate = entryDict['Start Date'];
-    var endDate = entryDict['End Date'];
-
-    var startMonth = startDate.toLocaleString('default', { month: 'long' });
-    var endMonth = endDate.toLocaleString('default', { month: 'long' });
-    var startDay = startDate.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
-    var endDay = endDate.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
-
-    const dateString = startMonth + ' ' + startDay + ' - ' + endMonth + ' ' + endDay;
+    const dateString = createDateString(START, END)
 
     calendarDict['Event ID'] = ''
     calendarDict['Tentative Dates'] = dateString
-    calendarDict['Sorting'] = entryDict['Start Date'].getTime() - 1
+    calendarDict['Sorting'] = START.getTime() - 1
 
   }
 
-
-
-
   addRow(calendarDict)
-
-
-
 };
+
+// Creates a string indiciating the range of two date objects such as: Jan 1st-Jan 3rd
+function createDateString(start, end){
+    var startMonth = start.toLocaleString('default', { month: 'long' });
+    var endMonth = end.toLocaleString('default', { month: 'long' });
+    var startDay = start.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
+    var endDay = end.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
+
+    const dateString = startMonth + ' ' + startDay + ' - ' + endMonth + ' ' + endDay;
+    return dateString;
+};
+
+
+// Determines information needed for row.
+function processRow(entryDict){
+
+}
 
 // Delete entry row when done with everything.
 
