@@ -7,7 +7,7 @@
 
 // SpreadSheet Data
 const spreadsheetId = 'ID';
-const spreadsheet = SpreadsheetApp.openById('ID');
+const spreadsheet = SpreadsheetApp.openById('');
 
 // Calendar Page Info
 const calendarSheet = spreadsheet.getSheetByName("Calendar")
@@ -79,7 +79,6 @@ function processNewEntries(){
 // ###################
 // Creates a new entry on Sheets.
 function updateSheets(entryDict){
-  var calendarDict = createCalendarDict(entryDict)
 
   // Events that are already in place.
   var eventMatrix = calendarSheet.getRange("B:B").getValues()
@@ -91,14 +90,19 @@ function updateSheets(entryDict){
 
   // Create an if else for whether or not the entry is a duplicate to proceed.
   // Make it a function?
+  insertRow(entryDict)
 
+};
+
+// Formats row data based on date style then writes it to sheet
+function insertRow(entryDict){
+  var calendarDict = createCalendarDict(entryDict)
   const START = entryDict['Start Date']
   const END = entryDict['End Date']
 
   // Singular Month
   if (months.includes(START)) {
-    var monthName = START
-    var date = new Date(`${monthName} 1, ${new Date().getFullYear()}`);
+    var date = new Date(`${START} 1, ${new Date().getFullYear()}`);
     calendarDict['Tentative Dates'] = START
     calendarDict['Sorting'] = date.getTime() - 1
   }
@@ -109,22 +113,22 @@ function updateSheets(entryDict){
   } 
   // Date Range
   else {
+    // Entries for each date
     for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
       calendarDict['Tentative Dates'] = date
       calendarDict['Sorting'] = date.getTime()
-      addRow(calendarDict)
+      writeRow(calendarDict)
     }
-
+    // Singular entry for the range
     const dateString = createDateString(START, END)
-
     calendarDict['Event ID'] = ''
     calendarDict['Tentative Dates'] = dateString
     calendarDict['Sorting'] = START.getTime() - 1
-
   }
-
-  addRow(calendarDict)
+  writeRow(calendarDict)
 };
+
+
 
 // Creates a string indiciating the range of two date objects such as: Jan 1st-Jan 3rd
 function createDateString(start, end){
@@ -137,17 +141,8 @@ function createDateString(start, end){
     return dateString;
 };
 
-
-// Determines information needed for row.
-function processRow(entryDict){
-
-}
-
-// Delete entry row when done with everything.
-
-
-// Fills in next blank row based on provided dictionary.
-function addRow(calendarDict) {
+// Writes the next blank row on to the sheet.
+function writeRow(calendarDict) {
   var lastRow = calendarSheet.getLastRow();
   var newRow = [];
 
