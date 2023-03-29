@@ -7,7 +7,7 @@
 
 // SpreadSheet Data
 const spreadsheetId = 'ID';
-const spreadsheet = SpreadsheetApp.openById('');
+const spreadsheet = SpreadsheetApp.openById('ID);
 
 // Calendar Page Info
 const calendarSheet = spreadsheet.getSheetByName("Calendar")
@@ -33,34 +33,21 @@ const months = [
   "November", 
   "December"];
 
-
-
-
-// Verify Groupings are retained
-// Determine how to run function at set intervals
-// Determine how to run functions on edit for Gcal and Spreadsheet
-// Highlight entries that are duplicates in name and date
-
-// Excel, change heading formatting based on if it matches entry page.
-// Return a log of headings that don't match when script is run
-// Excel should not allow event id to be entere unless it's a date span
-// Excel should validate data.
-// Headings should be made by cell reference.
-
 // ###################
 // Main Functions 
 // ###################
-// Assumes dates and values have been data validated by Excel
 function main() {
   processNewEntries();
   sortSheet()
 };
 
-
-// Pulls all checked entries from entry page.  Creates new rows and Gcal entries for these entries then remove them from page.
+// Pulls all checked entries from entry page.  Creates new rows and Gcal entries for these entries then removes them from page.
 function processNewEntries(){
   const entryHeadings = entrySheet.getRange(entryHeadingsRange).getValues()[0]; // get values returns a list of rows
-  var entries = entrySheet.getRange(entryDataRange).getValues();
+  // Entry Info
+  const range = entrySheet.getRange(entryDataRange)
+  var rowNumber = range.getRow()
+  const entries = range.getValues()
 
   for (const row of entries) {
     var eventData = row
@@ -70,12 +57,13 @@ function processNewEntries(){
       updateSheets(entryDict)
       updateGcal(entryDict)
       // Delete row after it's added
+      rowNumber ++
     }
   }
 };
 
 // ###################
-// Adding Entries to Sheets
+// Updating Sheets
 // ###################
 // Creates a new entry on Sheets.
 function updateSheets(entryDict){
@@ -85,50 +73,69 @@ function updateSheets(entryDict){
   var eventList = eventMatrix.map(function(row) {
     return row[0];
       });
-  console.log(eventList)
-  // Generate this at the start of adding entries then append instead of regenerating.
+  // Current Event Being Added
+  eventName = entryDict['Topic or Contents']
 
-  // Create an if else for whether or not the entry is a duplicate to proceed.
-  // Make it a function?
-  insertRow(entryDict)
-
+  // Add event if it doesn't already exist.
+  if (!eventList.includes(eventName)){
+    insertRow(entryDict)
+  } else {
+    return false
+  }
 };
 
 // Formats row data based on date style then writes it to sheet
 function insertRow(entryDict){
   var calendarDict = createCalendarDict(entryDict)
+  calendarDict['Event ID'] = ''
   const START = entryDict['Start Date']
   const END = entryDict['End Date']
 
   // Singular Month
   if (months.includes(START)) {
-    var date = new Date(`${START} 1, ${new Date().getFullYear()}`);
-    calendarDict['Tentative Dates'] = START
-    calendarDict['Sorting'] = date.getTime() - 1
+    writeSingularMonth(calendarDict, START)
   }
   // Singular Date
   else if (START.getTime() == END.getTime()) {
-    calendarDict['Tentative Dates'] = START
-    calendarDict['Sorting'] = START.getTime()
+    writeSingularDate(calendarDict, START)
   } 
   // Date Range
   else {
-    // Entries for each date
-    for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      calendarDict['Tentative Dates'] = date
-      calendarDict['Sorting'] = date.getTime()
-      writeRow(calendarDict)
-    }
-    // Singular entry for the range
-    const dateString = createDateString(START, END)
-    calendarDict['Event ID'] = ''
-    calendarDict['Tentative Dates'] = dateString
-    calendarDict['Sorting'] = START.getTime() - 1
+    writeDateRange(calendarDict, entryDict, START, END)
   }
+};
+
+// ###################
+// Date Functions
+// ###################
+function writeSingularMonth(calendarDict, START){
+  const date = new Date(`${START} 1, ${new Date().getFullYear()}`);   // Create Date object.
+  calendarDict['Tentative Dates'] = START
+  calendarDict['Sorting'] = date.getTime() - 1
+  writeRow(calendarDict)
+}
+
+function writeSingularDate(calendarDict, START){
+  calendarDict['Tentative Dates'] = START
+  calendarDict['Sorting'] = START.getTime()
   writeRow(calendarDict)
 };
 
-
+function writeDateRange(calendarDict, entryDict, START, END){
+  // Entries for each individual date
+  for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
+    calendarDict['Event ID'] = entryDict['Topic or Contents']
+    calendarDict['Tentative Dates'] = date
+    calendarDict['Sorting'] = date.getTime()
+    writeRow(calendarDict)
+    }
+  // Singular entry for date range
+  const dateString = createDateString(START, END)
+  calendarDict['Event ID'] = ''
+  calendarDict['Tentative Dates'] = dateString
+  calendarDict['Sorting'] = START.getTime() - 1
+  writeRow(calendarDict)
+};
 
 // Creates a string indiciating the range of two date objects such as: Jan 1st-Jan 3rd
 function createDateString(start, end){
@@ -155,6 +162,7 @@ function writeRow(calendarDict) {
   amountRows = 1
   calendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
 };
+
 
 
 // Creates and returns a dictionary with all calendar headings as keys.
