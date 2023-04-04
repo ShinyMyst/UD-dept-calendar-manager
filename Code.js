@@ -7,7 +7,7 @@
 
 // SpreadSheet Data
 const spreadsheetId = 'ID';
-const spreadsheet = SpreadsheetApp.openById('ID);
+const spreadsheet = SpreadsheetApp.openById(ID);
 
 // Calendar Page Info
 const calendarSheet = spreadsheet.getSheetByName("Calendar")
@@ -17,6 +17,18 @@ const calendarHeadingsRange = 'A1:K1'
 const entrySheet = spreadsheet.getSheetByName("Enter_Date");
 const entryHeadingsRange = "A1:M1";
 const entryDataRange = "A2:M25";
+
+// Calendars
+const generalCalendarId = ID
+const operationsCalendarId = ID
+const residenceLifeCalendarId = ID
+const learningCalendarId = ID
+
+const generalCal = CalendarApp.getCalendarById(generalCalendarId);
+const operationsCal = CalendarApp.getCalendarById(operationsCalendarId);
+const reslifeCal = CalendarApp.getCalendarById(residenceLifeCalendarId);
+const lldCal = CalendarApp.getCalendarById(learningCalendarId);
+
 
 // Other Info
 const months = [
@@ -55,7 +67,8 @@ function processNewEntries(){
     if (eventData[0] == true) {
       var entryDict = Object.fromEntries(entryHeadings.map((key, i) => [key, eventData[i]]));
       updateSheets(entryDict)
-      updateGcal(entryDict)
+      createCalendarEvent(entryDict)
+      //updateGcal(entryDict)
       // Delete row after it's added
       rowNumber ++
     }
@@ -148,7 +161,7 @@ function createDateString(start, end){
     return dateString;
 };
 
-// Writes the next blank row on to the sheet.
+// Writes to the next blank row on to the sheet.
 function writeRow(calendarDict) {
   var lastRow = calendarSheet.getLastRow();
   var newRow = [];
@@ -187,11 +200,79 @@ function createCalendarDict(entryDict){
 
 
 // Creates an entry on Excel with given data.
-// Does not check for duplicate entries.
-function updateGcal(dataDict){
-  // Add based on ???
+function updateGcal(targetCalendar, eventDescription, dates){
+  if (!calendar.getEventsForDay(date, {search: eventTitle}).length){
+    var eventDescription = `
+          Category: ${calendarDict['Category']}
+          Staff Responsible: ${calendarDict['Staff Responsible']}
+          Privacy: ${calendarDict['Privacy']}
+          Notes: ${calendarDict['Notes']}
+          Link: ${calendarDict['Link']}
+        `;
+        // Add event to calendar
+        var event = targetCalendar.createAllDayEvent(eventTitle, dates[0], dates[dates.length - 1]);//this makes date the same if no endDate
+        event.setDescription(eventDescription);
+  }
 
 };
+// Adjust privacy entry on calendar itself instead of noting it here.
+// Create a way to configure event descriptions in config
+// Create an excel config page that the config page will read
+
+function getCalendar(entryDict){
+  switch(entryDict['Department/Branch']) {
+    case 'Housing Operations':
+      return operationsCal
+
+    case 'L&L Dev':
+      return lldCal
+
+    case 'Residence Life':
+      return reslifeCal
+
+    default:
+      return generalCal
+
+  }
+}
+
+function getDateRange(entryDict){
+  START = entryDict['Start Date']
+  END = entryDict['End Date']
+  if (START.getTime() === END.getTime()) {
+    return [entryDict['Start Date']]
+  }
+  return [entryDict['Start Date'], entryDict['End Date']]
+}
+
+function getDescription(entryDict){
+  var eventDescription = `
+      Category: ${entryDict['Category']}
+      Staff Responsible: ${entryDict['Primary Staff Responsible']}
+      Privacy: ${entryDict['Privacy']}
+      Notes: ${entryDict['Notes']}
+      Link: ${entryDict['Link']}
+    `;
+  return eventDescription
+}
+
+function createCalendarEvent(entryDict){
+  // If no specific date given, skip calendar creation
+  if (months.includes(entryDict['Start Date'])){
+    return null
+  } 
+
+  var calendar = getCalendar(entryDict)
+  var dates = getDateRange(entryDict)
+  var description = getDescription(entryDict)
+  var title = entryDict['Topic or Contents']
+
+  if (!calendar.getEventsForDay(dates[0], {search: title}).length){
+    var event = calendar.createAllDayEvent(title, ...dates);
+    event.setDescription(description)    
+  }
+};
+
 
 // Deletes entry on specified row.
 function deleteEntry(line){
