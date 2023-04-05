@@ -1,28 +1,9 @@
-// Required imports
-// from calendar sheet
-calendarSheet = null //
-eventNameRange = "B:B" // Column range for the event names
-eventNameHeading = "Topic or Contents"
-calendarHeadingsRange = "" // Use the getHeadingsRange function to generate this instead
-MONTHS = null // include the list of months here
-eventIdHeading = 'Event ID'
-sortingHeading = 'Sorting'
-dateHeading = "Tentative Dates"
-
-//from entry sheet
-startDateHeading = 'Start Date'
-endDateHeading = 'End Date'
-entry_eventNameHeading = "Topic or Contents"
-
-
-
-
 // Updates the calendar sheet.  Returns false if duplicate entry.
 function updateSheets(entryDict, rowNumber){
-  if (duplicateEntry){
+  if (duplicateEntry(entryDict)){
     return false
   };
-  SheetEntry(entryDict, rowNumber)
+  new SheetEntry(entryDict, rowNumber)
 };
 
 // ###################
@@ -37,9 +18,9 @@ class SheetEntry {
   };
 
   _processInput(){
-    this.calendarDict[eventIdHeading] = ''
-    const START = this.entryDict[startDateHeading]
-    const END = this.entryDict[endDateHeading]
+    this.calendarDict[CalendarPage['eventID']] = ''
+    const START = this.entryDict[InputPage['startDate']]
+    const END = this.entryDict[InputPage['endDate']]
 
     // Singular Month
     if (MONTHS.includes(START)) {
@@ -61,17 +42,17 @@ class SheetEntry {
 
   // Writes to the next blank row on to the sheet.
   _writeRow() {
-    var lastRow = this.calendarSheet.getLastRow();
+    var lastRow = CalendarSheet.getLastRow();
     var newRow = [];
 
     for (var heading in this.calendarDict){
       newRow.push(this.calendarDict[heading])
     }
 
-    columnStart = 1
-    columnEnd = newRow.length
-    amountRows = 1
-    this.calendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
+    const columnStart = 1
+    const columnEnd = newRow.length
+    const amountRows = 1
+    CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
   };
 
   _deleteRow(rowNumber) {
@@ -83,14 +64,14 @@ class SheetEntry {
   // ========================================
   _writeSingularMonth(START){
   const date = new Date(`${START} 1, ${new Date().getFullYear()}`);   // Create Date object.
-  this.calendarDict[dateHeading] = START
-  this.calendarDict[sortingHeading] = date.getTime() - 1
+  this.calendarDict[CalendarPage['dateName']] = START
+  this.calendarDict[CalendarPage['sorting']] = date.getTime() - 1
   this._writeRow()
   }
 
   _writeSingularDate(START){
-    this.calendarDict[dateHeading] = START
-    this.calendarDict[sortingHeading] = START.getTime()
+    this.calendarDict[CalendarPage['dateName']] = START
+    this.calendarDict[CalendarPage['sorting']] = START.getTime()
     this._writeRow()
   };
 
@@ -108,16 +89,16 @@ class SheetEntry {
 
     // Entries for each individual date
     for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.calendarDict[eventIdHeading] = entryDict[entry_eventNameHeading]
-      this.calendarDict[dateHeading] = date
-      this.calendarDict[sortingHeading] = date.getTime()
+      this.calendarDict[eventIdHeading] = entryDict[InputPage['eventName']]
+      this.calendarDict[CalendarPage['dateName']] = date
+      this.calendarDict[CalendarPage['sorting']] = date.getTime()
       this._writeRow()
       }
     // Singular entry for date range
     const dateString = createDateString(START, END)
     this.calendarDict[eventIdHeading] = ''
-    this.calendarDict[dateHeading] = dateString
-    this.calendarDict[sortingHeading] = START.getTime() - 1
+    this.calendarDict[CalendarPage['dateName']] = dateString
+    this.calendarDict[CalendarPage['sorting']] = START.getTime() - 1
     this._writeRow()
   };
 };
@@ -127,17 +108,16 @@ class SheetEntry {
 // ###################
 
 // Returns True if duplicate entry exists; False otherwise.
-function duplicateEntry(){
+function duplicateEntry(entryDict){
   function getEventList(){
-    var eventMatrix = calendarSheet.getRange(eventNameRange).getValues() 
+    var eventMatrix = CalendarSheet.getRange(CalendarPage['allEvents']).getValues() 
     var eventList = eventMatrix.map(function(row) {
       return row[0];
         });
     return eventList
-    // Ideally, this should use eventNameHeading to get the range instead.
   }
 
-  eventName = entryDict[eventNameHeading]
+  eventName = entryDict[InputPage['eventName']]
   eventList = getEventList()
   if (eventList.includes(eventName)){
     return true
@@ -149,7 +129,8 @@ function duplicateEntry(){
 // Creates and returns a dictionary with all calendar headings as keys.
 function createCalendarDict(entryDict){
   var calendarDict = {}
-  const calendarHeadings = calendarSheet.getRange(calendarHeadingsRange).getValues()[0]; // get values returns a list of rows
+  //CalendarSheet.getRange(CalendarPage['headingRange']).getValues()[0]; // get values returns a list of rows
+  const calendarHeadings = CalendarPage['headingRange']
   // Fill calendarDict with matching values
   for (var index in calendarHeadings) {
     var heading = calendarHeadings[index]

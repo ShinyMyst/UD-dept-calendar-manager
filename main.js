@@ -1,49 +1,33 @@
-// NEEDED IMPORTS
-
-// Entry Page Data
-entrySheet = null
-entryInputRange = null // Where to check for entry data.  Dynamically generate in config
-checkBoxCol = null // String representing the name of the column with the check boxes
-
-
-
 // Checks for completed entries on entry page & adds them to Calendar Page and Gcal.
 function processNewEntries(){
-  const headings = getHeadingRange(entrySheet)
-  var [entries, rowNumber] = getEntryData(entrySheet)
+  var [entries, rowNumber] = getEnteredData()
 
   for (const row of entries) {
-    var entryDict = Object.fromEntries(headaings.map((key, i) => [key, row[i]]));  // Pair headings with values in current row
-    if (entryDict[checkBoxCol]){
+    var entryDict = Object.fromEntries(InputPage['headingRange'].map((key, i) => [key, row[i]]));  // Pair headings with values in current row
+    if (entryDict[InputPage['checkboxName']]){
       updateSheets(entryDict, rowNumber)
       updateGcal(entryDict)
-      sortSheet()
     rowNumber ++
     }
   }
+  sortSheet()
 };
-
 
 // ###################
 // Helper Functions
 // ###################
 
-// Get all headings for a sepcified sheet
-function getHeadingRange(sheet) {
-  const startRow = 1
-  const startColumn = sheet.getFirstColumn()
-  const numRows = 1
-  const numColumns = sheet.getLastColumn()
-
-  const headingRange = sheet.getRange(startRow, startColumn, numRows, numColumns)
-  const headings = sheet.getRange(headingRange).getValues()[0]
-  return headings
-};
-
 // Returns a list of all entries on entry page and the row they start on.
-function getEntryData() {
-  const range = entrySheet.getRange(entryDataRange)
+function getEnteredData() {
+  const range = InputSheet.getRange(InputPage['inputRange'])
   var entries = range.getValues()
   var rowNumber = range.getRow()
-  return entries, rowNumber
+  return [entries, rowNumber]
+};
+
+// Sorts dates in the proper order & ensures groupings are retained correctly.
+function sortSheet(){
+  var lastColumn = CalendarSheet.getLastColumn();
+  const range = CalendarSheet.getRange(2, 1, CalendarSheet.getLastRow() - 1, lastColumn);
+  range.sort({column: lastColumn, ascending: true});
 };

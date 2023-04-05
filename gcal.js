@@ -1,9 +1,6 @@
-startDateHeading = 'Start Date'
-entryEventNameHeading = 'Topic or Contents'
-
 function updateGcal(entryDict){
   // Filter out entries without a specific date
-  if (MONTHS.includes(entryDict[startDateHeading])){
+  if (MONTHS.includes(entryDict[InputPage['startDate']])){
     return
   }
 };
@@ -15,30 +12,29 @@ class GcalEntry {
     };
 
   _processInput(){
-    var calendar = getCalendar()
-    var dates = getDateRange()
-    var description = getDescription()
-    var title = entryDict[entryEventNameHeading]
+    var calendar = _getCalendar()
+    var dates = _getDateRange()
+    var description = _getDescription()
+    var title = entryDict[InputPage['eventName']]
 
     if (!calendar.getEventsForDay(dates[0], {search: title}).length){
       var event = calendar.createAllDayEvent(title, ...dates);
-      event.setDescription(description)    
+      event.setDescription(EventDescription)    
     }
-  };
-
+  }
 
   // ========================================
   // ===== Get Event Information =====
   // ========================================
   _getCalendar(entryDict){
-    switch(entryDict['Department/Branch']) {
-      case 'Housing Operations':
+    switch(entryDict[InputPage['deptName']]) {
+      case DropDown['operations']:
         return operationsCal
 
-      case 'L&L Dev':
+      case DropDown['learning']:
         return lldCal
 
-      case 'Residence Life':
+      case DropDown['resLife']:
         return reslifeCal
 
       default:
@@ -48,12 +44,12 @@ class GcalEntry {
   };
 
   _getDateRange(entryDict){
-    START = entryDict['Start Date']
-    END = entryDict['End Date']
+    START = entryDict[InputPage['startDate']]
+    END = entryDict[InputPage['endDate']]
     if (START.getTime() === END.getTime()) {
-      return [entryDict['Start Date']]
+      return [entryDict[InputPage['startDate']]]
     }
-    return [entryDict['Start Date'], entryDict['End Date']]
+    return [entryDict[InputPage['startDate']], entryDict[InputPage['endDate']]]
   };
 
   _getDescription(entryDict){
@@ -67,9 +63,3 @@ class GcalEntry {
     return eventDescription
   }
 };
-
-
-
-// ###################
-// Helper Functions
-// ###################
