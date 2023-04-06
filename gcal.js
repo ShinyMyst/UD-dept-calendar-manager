@@ -1,7 +1,7 @@
 function updateGcal(entryDict){
   // Filter out entries without a specific date
-  if (MONTHS.includes(entryDict[InputPage['startDate']])){
-    return
+  if (!MONTHS.includes(entryDict[InputPage['startDate']])){
+    new GcalEntry(entryDict)
   }
 };
 
@@ -12,14 +12,15 @@ class GcalEntry {
     };
 
   _processInput(){
-    var calendar = _getCalendar()
-    var dates = _getDateRange()
-    var description = _getDescription()
-    var title = entryDict[InputPage['eventName']]
+    var calendar = this._getCalendar()
+    var dates = this._getDateRange()
+    var description = this._getDescription()
+    var title = this.entryDict[InputPage['eventName']]
 
     if (!calendar.getEventsForDay(dates[0], {search: title}).length){
       var event = calendar.createAllDayEvent(title, ...dates);
-      event.setDescription(EventDescription)    
+      //Logger.log("CALENDAR: Added", title, "to", calendar)
+      event.setDescription(description)    
     }
   }
 
@@ -27,38 +28,38 @@ class GcalEntry {
   // ===== Get Event Information =====
   // ========================================
   _getCalendar(entryDict){
-    switch(entryDict[InputPage['deptName']]) {
+    switch(this.entryDict[InputPage['deptName']]) {
       case DropDown['operations']:
-        return operationsCal
+        return OperationCalendar 
 
       case DropDown['learning']:
-        return lldCal
+        return LLDCalendar 
 
       case DropDown['resLife']:
-        return reslifeCal
+        return ResLifeCalendar 
 
       default:
-        return generalCal
+        return GeneralCalendar 
 
     }
   };
 
-  _getDateRange(entryDict){
-    START = entryDict[InputPage['startDate']]
-    END = entryDict[InputPage['endDate']]
+  _getDateRange(){
+    const START = this.entryDict[InputPage['startDate']]
+    const END = this.entryDict[InputPage['endDate']]
     if (START.getTime() === END.getTime()) {
-      return [entryDict[InputPage['startDate']]]
+      return [this.entryDict[InputPage['startDate']]]
     }
-    return [entryDict[InputPage['startDate']], entryDict[InputPage['endDate']]]
+    return [this.entryDict[InputPage['startDate']], this.entryDict[InputPage['endDate']]]
   };
 
-  _getDescription(entryDict){
+  _getDescription(){
     var eventDescription = `
-        Category: ${entryDict['Category']}
-        Staff Responsible: ${entryDict['Primary Staff Responsible']}
-        Privacy: ${entryDict['Privacy']}
-        Notes: ${entryDict['Notes']}
-        Link: ${entryDict['Link']}
+        Category: ${this.entryDict['Category']}
+        Staff Responsible: ${this.entryDict['Primary Staff Responsible']}
+        Privacy: ${this.entryDict['Privacy']}
+        Notes: ${this.entryDict['Notes']}
+        Link: ${this.entryDict['Link']}
       `;
     return eventDescription
   }
