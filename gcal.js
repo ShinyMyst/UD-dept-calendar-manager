@@ -20,7 +20,11 @@ class GcalEntry {
     if (!calendar.getEventsForDay(dates[0], {search: title}).length){
       var event = calendar.createAllDayEvent(title, ...dates);
       //Logger.log("CALENDAR: Added", title, "to", calendar)
-      event.setDescription(description)    
+      event.setDescription(description)
+      Logger.log("Google Calendar.  Added Entry " + title + " " + dates)
+    }
+    else {
+      Logger.log("Google Calendar.  Duplicate Entry " + title)
     }
   }
 
@@ -57,7 +61,6 @@ class GcalEntry {
     var eventDescription = `
         Category: ${this.entryDict['Category']}
         Staff Responsible: ${this.entryDict['Primary Staff Responsible']}
-        Privacy: ${this.entryDict['Privacy']}
         Notes: ${this.entryDict['Notes']}
         Link: ${this.entryDict['Link']}
       `;

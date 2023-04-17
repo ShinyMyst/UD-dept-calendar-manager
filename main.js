@@ -7,8 +7,8 @@ function processNewEntries(){
     if (entryDict[InputPage['checkboxName']]){
       updateSheets(entryDict, rowNumber)
       updateGcal(entryDict)
-    rowNumber ++
     }
+    rowNumber ++
   }
   sortSheet()
 };

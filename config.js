@@ -1,6 +1,7 @@
 // Note- Now that I realize imports are not required in GoogleScript
 // It may be better to define variables directly instead of in dict
 // Define calendar description on this page as well.
+// Mark public/private on calendar entries based on input?
 
 // ###################
 // Manual Entry

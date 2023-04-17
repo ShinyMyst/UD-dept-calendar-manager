@@ -1,6 +1,8 @@
 // Updates the calendar sheet.  Returns false if duplicate entry.
 function updateSheets(entryDict, rowNumber){
   if (duplicateEntry(entryDict)){
+    var eventName = entryDict[InputPage['eventName']]
+    Logger.log("Input Page.  Duplicate Entry " + eventName)
     return false
   };
   new SheetEntry(entryDict, rowNumber)
@@ -53,10 +55,15 @@ class SheetEntry {
     const columnEnd = newRow.length
     const amountRows = 1
     CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
+    var eventName = this.entryDict[InputPage['eventName']]
+    Logger.log("Calendar Page.  Added Entry " + eventName)
   };
 
   _deleteRow(rowNumber) {
-    null
+    var rowRange = InputSheet.getRange(rowNumber, 1, 1, InputSheet.getLastColumn())
+    rowRange.clearContent()
+    var eventName = this.entryDict[InputPage['eventName']]
+    Logger.log("Calendar Page.  Deleted Entry " + eventName)
   };
 
   // ========================================
@@ -89,14 +96,14 @@ class SheetEntry {
 
     // Entries for each individual date
     for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.calendarDict[eventIdHeading] = entryDict[InputPage['eventName']]
+      this.calendarDict[CalendarPage['eventID']] = this.entryDict[InputPage['eventName']]
       this.calendarDict[CalendarPage['dateName']] = date
       this.calendarDict[CalendarPage['sorting']] = date.getTime()
       this._writeRow()
       }
     // Singular entry for date range
     const dateString = createDateString(START, END)
-    this.calendarDict[eventIdHeading] = ''
+    this.calendarDict[CalendarPage['eventID']] = ''
     this.calendarDict[CalendarPage['dateName']] = dateString
     this.calendarDict[CalendarPage['sorting']] = START.getTime() - 1
     this._writeRow()
