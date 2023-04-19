@@ -5,7 +5,8 @@ function updateSheets(entryDict, rowNumber){
     Logger.log("Input Page.  Duplicate Entry " + eventName)
     return false
   };
-  new SheetEntry(entryDict, rowNumber)
+  entry = SheetEntry(entryDict, rowNumber)
+  return entry.processInput()
 };
 
 // ###################
@@ -15,11 +16,9 @@ class SheetEntry {
   constructor(entryDict, rowNumber) {
     this.entryDict = entryDict;
     this.calendarDict = createCalendarDict(entryDict)
-    this._processInput()
-    this._deleteRow(rowNumber)
   };
 
-  _processInput(){
+  processInput(){
     this.calendarDict[CalendarPage['eventID']] = ''
     const START = this.entryDict[InputPage['startDate']]
     const END = this.entryDict[InputPage['endDate']]
@@ -36,6 +35,7 @@ class SheetEntry {
     else {
       this._writeDateRange(START, END)
     }
+    return True
   };
 
   // ========================================
@@ -57,13 +57,6 @@ class SheetEntry {
     CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
     var eventName = this.entryDict[InputPage['eventName']]
     Logger.log("Calendar Page.  Added Entry " + eventName)
-  };
-
-  _deleteRow(rowNumber) {
-    var rowRange = InputSheet.getRange(rowNumber, 1, 1, InputSheet.getLastColumn())
-    rowRange.clearContent()
-    var eventName = this.entryDict[InputPage['eventName']]
-    Logger.log("Calendar Page.  Deleted Entry " + eventName)
   };
 
   // ========================================
@@ -117,10 +110,8 @@ class SheetEntry {
 // Returns True if duplicate entry exists; False otherwise.
 function duplicateEntry(entryDict){
   function getEventList(){
-    var eventMatrix = CalendarSheet.getRange(CalendarPage['allEvents']).getValues() 
-    var eventList = eventMatrix.map(function(row) {
-      return row[0];
-        });
+    var eventMatrix = CalendarSheet.getRange(CalendarPage['allEvents']).getValues() // This is a list of lists
+    var eventList = eventMatrix.map(function(row) {return row[0]}); // This is a list of strings
     return eventList
   }
 
