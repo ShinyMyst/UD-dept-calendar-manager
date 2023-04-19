@@ -5,7 +5,7 @@ function updateSheets(entryDict, rowNumber){
     Logger.log("Input Page.  Duplicate Entry " + eventName)
     return false
   };
-  entry = SheetEntry(entryDict, rowNumber)
+  entry = new SheetEntry(entryDict, rowNumber)
   return entry.processInput()
 };
 
@@ -35,7 +35,7 @@ class SheetEntry {
     else {
       this._writeDateRange(START, END)
     }
-    return True
+    return true
   };
 
   // ========================================
@@ -110,18 +110,23 @@ class SheetEntry {
 // Returns True if duplicate entry exists; False otherwise.
 function duplicateEntry(entryDict){
   function getEventList(){
-    var eventMatrix = CalendarSheet.getRange(CalendarPage['allEvents']).getValues() // This is a list of lists
-    var eventList = eventMatrix.map(function(row) {return row[0]}); // This is a list of strings
-    return eventList
+    var eventMatrix = CalendarSheet.getRange('B:C').getValues() // This is a list of lists that include event name and dept
+    var eventList = eventMatrix.map(function(row) {return row[0]}); // This is a list of event names
+    return [eventList, eventMatrix]
   }
-
   eventName = entryDict[InputPage['eventName']]
-  eventList = getEventList()
+  eventCategory = entryDict[InputPage['deptName']]
+  eventEntry = [eventName, eventCategory]
+  const [eventList, eventMatrix] = getEventList()
+  console.log(eventEntry)
+  console.log(eventList)
   if (eventList.includes(eventName)){
-    return true
-  } else {
-    return false
-  }
+    const found = eventMatrix.some(array => {
+      return array.join(',') === eventEntry.join(',');
+    });
+    console.log(found)
+    return found;
+  } 
 };
 
 // Creates and returns a dictionary with all calendar headings as keys.
