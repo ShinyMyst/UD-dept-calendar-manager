@@ -19,7 +19,6 @@ class GcalEntry {
 
     if (!calendar.getEventsForDay(dates[0], {search: title}).length){
       var event = calendar.createAllDayEvent(title, ...dates);
-      //Logger.log("CALENDAR: Added", title, "to", calendar)
       event.setDescription(description)
       Logger.log("Google Calendar.  Added Entry " + title + " " + dates)
     }
@@ -49,20 +48,21 @@ class GcalEntry {
   };
 
   _getDateRange(){
+    const DAY_IN_MS = 86400000; // number of milliseconds in a day
     const START = this.entryDict[InputPage['startDate']]
     const END = this.entryDict[InputPage['endDate']]
+    const DAY = new Date(DAY_IN_MS);
     if (START.getTime() === END.getTime()) {
-      return [this.entryDict[InputPage['startDate']]]
+      return [START]
     }
-    return [this.entryDict[InputPage['startDate']], this.entryDict[InputPage['endDate']]]
+    return [START, new Date(END.getTime() + DAY.getTime())] // Range ends at midnight so needs extra day
   };
 
   _getDescription(){
     var eventDescription = `
         Category: ${this.entryDict['Category']}
         Staff Responsible: ${this.entryDict['Primary Staff Responsible']}
-        Notes: ${this.entryDict['Notes']}
-        Link: ${this.entryDict['Link']}
+        Description: ${this.entryDict['Description']}
       `;
     return eventDescription
   }

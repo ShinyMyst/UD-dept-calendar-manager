@@ -110,7 +110,7 @@ class SheetEntry {
 // Returns True if duplicate entry exists; False otherwise.
 function duplicateEntry(entryDict){
   function getEventList(){
-    var eventMatrix = CalendarSheet.getRange('B:C').getValues() // This is a list of lists that include event name and dept
+    var eventMatrix = CalendarSheet.getRange('A:C').getValues() // This is a list of lists that include event name and dept
     var eventList = eventMatrix.map(function(row) {return row[0]}); // This is a list of event names
     return [eventList, eventMatrix]
   }
@@ -118,13 +118,10 @@ function duplicateEntry(entryDict){
   eventCategory = entryDict[InputPage['deptName']]
   eventEntry = [eventName, eventCategory]
   const [eventList, eventMatrix] = getEventList()
-  console.log(eventEntry)
-  console.log(eventList)
   if (eventList.includes(eventName)){
     const found = eventMatrix.some(array => {
       return array.join(',') === eventEntry.join(',');
     });
-    console.log(found)
     return found;
   } 
 };

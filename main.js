@@ -4,6 +4,7 @@ function processNewEntries(){
   entries.shift() // Remove heading line
   rowNumber = 2 // Start on the row after the headings
 
+
   for (const row of entries) {
     var entryDict = Object.fromEntries(InputPage['headingRange'].map((key, i) => [key, row[i]]));  // Pair headings with values in current row
 
@@ -12,6 +13,7 @@ function processNewEntries(){
     if (entryDict[InputPage['checkboxName']]){
       if (updateSheets(entryDict, rowNumber)){
         InputSheet.deleteRow(rowNumber)
+        Logger.log("Input Page.  Deleted " + eventName)
       }
       else {
         rowNumber ++
