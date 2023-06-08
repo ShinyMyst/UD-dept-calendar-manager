@@ -6,14 +6,14 @@ function processNewEntries(){
 
 
   for (const row of entries) {
-    var entryDict = Object.fromEntries(InputPage['headingRange'].map((key, i) => [key, row[i]]));  // Pair headings with values in current row
+    var entryDict = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));  // Pair headings with values in current row
 
     // Try updating calendar with new entry data
     // Delete row if successful otherwise move to next row
-    if (entryDict[InputPage['checkboxName']]){
+    if (entryDict[HEADING['CheckBox']]){
       if (updateSheets(entryDict, rowNumber)){
         InputSheet.deleteRow(rowNumber)
-        Logger.log("Input Page.  Deleted " + eventName)
+        Logger.log("SHEETS.  Input Page.  Deleted " + eventName)
       }
       else {
         rowNumber ++
@@ -39,7 +39,7 @@ function processNewEntries(){
 // Attempt to data on current row to Google Sheets or GCal
 // Sheet and Gcal functions perform validation checks.
 function updateEvents(entryDict, rowNumber){
-  if (entryDict[InputPage['checkboxName']]){
+  if (entryDict[HEADING['CheckBox']]){
     if (updateSheets(entryDict, rowNumber)){
       InputSheet.deleteRow(rowNumber)
     }

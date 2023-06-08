@@ -1,7 +1,7 @@
 // Updates the calendar sheet.  Returns false if duplicate entry.
 function updateSheets(entryDict, rowNumber){
   if (duplicateEntry(entryDict)){
-    var eventName = entryDict[InputPage['eventName']]
+    var eventName = entryDict[HEADING['Event']]
     Logger.log("Input Page.  Duplicate Entry " + eventName)
     return false
   };
@@ -13,15 +13,15 @@ function updateSheets(entryDict, rowNumber){
 // Entry Class
 // ###################
 class SheetEntry {
-  constructor(entryDict, rowNumber) {
+  constructor(entryDict) {
     this.entryDict = entryDict;
     this.calendarDict = createCalendarDict(entryDict)
   };
 
   processInput(){
-    this.calendarDict[CalendarPage['eventID']] = ''
-    const START = this.entryDict[InputPage['startDate']]
-    const END = this.entryDict[InputPage['endDate']]
+    this.calendarDict[HEADING['EventID']] = ''
+    const START = this.entryDict[HEADING['StartDate']]
+    const END = this.entryDict[HEADING['EndDate']]
 
     // Singular Month
     if (MONTHS.includes(START)) {
@@ -55,8 +55,8 @@ class SheetEntry {
     const columnEnd = newRow.length
     const amountRows = 1
     CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
-    var eventName = this.entryDict[InputPage['eventName']]
-    Logger.log("Calendar Page.  Added Entry " + eventName)
+    var eventName = this.entryDict[HEADING['Event']]
+    Logger.log("SHEETS. Calendar Page.  Added Entry " + eventName)
   };
 
   // ========================================
@@ -64,14 +64,14 @@ class SheetEntry {
   // ========================================
   _writeSingularMonth(START){
   const date = new Date(`${START} 1, ${new Date().getFullYear()}`);   // Create Date object.
-  this.calendarDict[CalendarPage['dateName']] = START
-  this.calendarDict[CalendarPage['sorting']] = date.getTime() - 1
+  this.calendarDict[HEADING['DateRange']] = START
+  this.calendarDict[HEADING['Sorting']] = date.getTime() - 1
   this._writeRow()
   }
 
   _writeSingularDate(START){
-    this.calendarDict[CalendarPage['dateName']] = START
-    this.calendarDict[CalendarPage['sorting']] = START.getTime()
+    this.calendarDict[HEADING['DateRange']] = START
+    this.calendarDict[HEADING['Sorting']] = START.getTime()
     this._writeRow()
   };
 
@@ -89,16 +89,16 @@ class SheetEntry {
 
     // Entries for each individual date
     for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.calendarDict[CalendarPage['eventID']] = this.entryDict[InputPage['eventName']]
-      this.calendarDict[CalendarPage['dateName']] = date
-      this.calendarDict[CalendarPage['sorting']] = date.getTime()
+      this.calendarDict[HEADING['EventID']] = this.entryDict[HEADING['Event']]
+      this.calendarDict[HEADING['DateRange']] = date
+      this.calendarDict[HEADING['Sorting']] = date.getTime()
       this._writeRow()
       }
     // Singular entry for date range
     const dateString = createDateString(START, END)
-    this.calendarDict[CalendarPage['eventID']] = ''
-    this.calendarDict[CalendarPage['dateName']] = dateString
-    this.calendarDict[CalendarPage['sorting']] = START.getTime() - 1
+    this.calendarDict[HEADING['EventID']] = ''
+    this.calendarDict[HEADING['DateRange']] = dateString
+    this.calendarDict[HEADING['Sorting']] = START.getTime() - 1
     this._writeRow()
   };
 };
@@ -114,8 +114,8 @@ function duplicateEntry(entryDict){
     var eventList = eventMatrix.map(function(row) {return row[0]}); // This is a list of event names
     return [eventList, eventMatrix]
   }
-  eventName = entryDict[InputPage['eventName']]
-  eventCategory = entryDict[InputPage['deptName']]
+  eventName = entryDict[HEADING['Event']]
+  eventCategory = entryDict[HEADING['Dept']]
   eventEntry = [eventName, eventCategory]
   const [eventList, eventMatrix] = getEventList()
   if (eventList.includes(eventName)){
@@ -130,7 +130,7 @@ function duplicateEntry(entryDict){
 function createCalendarDict(entryDict){
   var calendarDict = {}
   //CalendarSheet.getRange(CalendarPage['headingRange']).getValues()[0]; // get values returns a list of rows
-  const calendarHeadings = CalendarPage['headingRange']
+  const calendarHeadings = CALENDAR_RANGE
   // Fill calendarDict with matching values
   for (var index in calendarHeadings) {
     var heading = calendarHeadings[index]

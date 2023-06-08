@@ -1,12 +1,7 @@
-// Note- Now that I realize imports are not required in GoogleScript
-// It may be better to define variables directly instead of in dict
-// Define calendar description on this page as well.
-// Mark public/private on calendar entries based on input?
-
 // ###################
 // Manual Entry
 // ###################
-const spreadsheetId = 'ID'
+const spreadsheetId = '1'
 const configPageName = "config"
 
 const MONTHS = [
@@ -26,8 +21,7 @@ const MONTHS = [
 // ###################
 // Automated 
 // ###################
-// Uses info from config page to complete variables.
-// CELL REFERENCES ARE HARDCODED
+// Utilizes config page of the Google Sheet to pull info
 
 // ========================================
 // ===== Set-Up =====
@@ -42,7 +36,7 @@ const configSheet = spreadsheet.getSheetByName(configPageName)
 function getCell(targetCell){
   const value = configSheet.getRange(targetCell).getValue()
   return value
-}
+};
 
 // Get all headings for a sepcified sheet
 function getHeadingRange(sheet) {
@@ -54,50 +48,65 @@ function getHeadingRange(sheet) {
   const headingRange = sheet.getRange(startRow, startColumn, numRows, numColumns)
   const headings = headingRange.getValues()[0]
   return headings
-  };
+};
 
 // ========================================
 // ===== Information about Input Page =====
 // ========================================
-const inputPageName = getCell('E4')
+const inputPageName = getCell('E33')
 const InputSheet = spreadsheet.getSheetByName(inputPageName)
-const InputPage = {
-  'headingRange': getHeadingRange(InputSheet),
-  'inputRange': getCell('E5'),
-  'checkboxName': getCell('E6'),
-  'startDate': getCell('E7'),
-  'endDate': getCell('E8'),
-  'eventName': getCell('E9'),
-  'deptName': getCell('E10')
-};
+const INPUT_HEADINGS = getHeadingRange(InputSheet)
 
 // ========================================
 // ===== Information about Calendar Page ==
 // ========================================
-const calendarPageName = getCell('B4')
+const calendarPageName = getCell('E32')
 const CalendarSheet = spreadsheet.getSheetByName(calendarPageName)
-const CalendarPage = {
-  'headingRange': getHeadingRange(CalendarSheet),
-  'allEvents': getCell('B5'),
-  'eventName': getCell('B6'),
-  'eventID': getCell('B7'),
-  'sorting': getCell('B8'),
-  'dateName': getCell('B9')
-};
+const CALENDAR_RANGE = getHeadingRange(CalendarSheet)
 
 // ==========================================
 // ===== Information about Google Calendars ==
 // ==========================================
-const GeneralCalendar = CalendarApp.getCalendarById(getCell('H4'));
-const OperationCalendar = CalendarApp.getCalendarById(getCell('H5'));
-const ResLifeCalendar = CalendarApp.getCalendarById(getCell('H6'));
-const LLDCalendar = CalendarApp.getCalendarById(getCell('H7'));
+const CALENDAR_NAME = {
+  'General': getCell('D42'),
+  'Operations': getCell('D43'),
+  'Reslife': getCell('D44'),
+  'Conferences': getCell('D45'),
+  'Training': getCell('D46'),
+  'AVIATE': getCell('D47'),
+  'Employment': getCell('D48')
+}
+
+const CALENDAR_LINK = {
+  'General': CalendarApp.getCalendarById(getCell('E42')),
+  'Operations': CalendarApp.getCalendarById(getCell('E43')),
+  'ResLife': CalendarApp.getCalendarById(getCell('E44')),
+  'Conferences': CalendarApp.getCalendarById(getCell('E45')),
+  'Training': CalendarApp.getCalendarById(getCell('E46')),
+  'AVIATE': CalendarApp.getCalendarById(getCell('E47')),
+  'Employment': CalendarApp.getCalendarById(getCell('E48'))
+}
 
 // ========================================
-// ===== Drop Downs =====
+// ===== Translate Heading Name into Dict ==
 // ========================================
-const DropDown = {
-  'operations': getCell('K4'),
-  'learning': getCell('K5'),
-  'resLife': getCell('K6')
+// Some headings must be referenced by name in code.  
+// This dict ensures the headings have a static reference name.
+// {'Name in Code': Name in Spreadsheet}
+const HEADING = {
+  'CheckBox': getCell('A32'),
+  'StartDate': getCell('A33'),
+  'EndDate': getCell('A34'),
+  'StartTime': getCell('A35'),
+  'EndTime': getCell('A36'),
+  'Event': getCell('A37'),
+  'Dept': getCell('A38'),
+  'Category': getCell('A39'),
+  'Calendar': getCell('A40'),
+  'Staff': getCell('A41'),
+  'Privacy': getCell('A42'),
+  'Details': getCell('A43'),
+  'Sorting': getCell('A44'),
+  'EventID': getCell('A45'),
+  'DateRange': getCell('A46')
 };
