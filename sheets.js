@@ -1,41 +1,39 @@
-// Updates the calendar sheet.  Returns false if duplicate entry.
-function updateSheets(entryDict, rowNumber){
-  if (duplicateEntry(entryDict)){
-    var eventName = entryDict[HEADING['Event']]
-    Logger.log("Input Page.  Duplicate Entry " + eventName)
-    return false
-  };
-  entry = new SheetEntry(entryDict, rowNumber)
-  return entry.processInput()
-};
-
 // ###################
 // Entry Class
 // ###################
 class SheetEntry {
-  constructor(entryDict) {
-    this.entryDict = entryDict;
-    this.calendarDict = createCalendarDict(entryDict)
+  constructor() {
+    this.entryDict = null;
+    this.calendarDict = null;
   };
 
-  processInput(){
+  updateGsheet(eventData){
+    this.entryDict = eventData
+    this.calendarDict = createCalendarDict(eventData)
+    this._processInput()
+  }
+
+  _processInput(){
     this.calendarDict[HEADING['EventID']] = ''
     const START = this.entryDict[HEADING['StartDate']]
     const END = this.entryDict[HEADING['EndDate']]
 
-    // Singular Month
-    if (MONTHS.includes(START)) {
-      this._writeSingularMonth(START)
+    switch (true) {
+      // Singular Month
+      case MONTHS.includes(START):
+        this._writeSingularMonth(START);
+        break;
+    
+      // Singular Date
+      case START.getTime() == END.getTime():
+        this._writeSingularDate(START);
+        break;
+    
+      // Date Range
+      default:
+        this._writeDateRange(START, END);
+        break;
     }
-    // Singular Date
-    else if (START.getTime() == END.getTime()) {
-      this._writeSingularDate(START)
-    } 
-    // Date Range
-    else {
-      this._writeDateRange(START, END)
-    }
-    return true
   };
 
   // ========================================
@@ -107,30 +105,12 @@ class SheetEntry {
 // Helper Functions
 // ###################
 
-// Returns True if duplicate entry exists; False otherwise.
-function duplicateEntry(entryDict){
-  function getEventList(){
-    var eventMatrix = CalendarSheet.getRange('A:C').getValues() // This is a list of lists that include event name and dept
-    var eventList = eventMatrix.map(function(row) {return row[0]}); // This is a list of event names
-    return [eventList, eventMatrix]
-  }
-  eventName = entryDict[HEADING['Event']]
-  eventCategory = entryDict[HEADING['Dept']]
-  eventEntry = [eventName, eventCategory]
-  const [eventList, eventMatrix] = getEventList()
-  if (eventList.includes(eventName)){
-    const found = eventMatrix.some(array => {
-      return array.join(',') === eventEntry.join(',');
-    });
-    return found;
-  } 
-};
 
 // Creates and returns a dictionary with all calendar headings as keys.
 function createCalendarDict(entryDict){
   var calendarDict = {}
   //CalendarSheet.getRange(CalendarPage['headingRange']).getValues()[0]; // get values returns a list of rows
-  const calendarHeadings = CALENDAR_RANGE
+  const calendarHeadings = CALENDAR_PAGE_RANGE
   // Fill calendarDict with matching values
   for (var index in calendarHeadings) {
     var heading = calendarHeadings[index]

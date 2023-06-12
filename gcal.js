@@ -1,15 +1,13 @@
-function updateGcal(entryDict){
-  // Filter out entries without a specific date
-  if (!MONTHS.includes(entryDict[HEADING['StartDate']])){
-    new GcalEntry(entryDict)
-  }
-};
-
 class GcalEntry {  
-  constructor(entryDict) {
-    this.entryDict = entryDict;
-    this._processInput();
-    };
+  constructor() {
+    this.entryDict = null;
+  };
+
+  updateGcal(eventData){
+    this.entryDict = eventData
+    this._processInput()
+  }
+
 
   _processInput(){
     var calendar = this._getCalendar()

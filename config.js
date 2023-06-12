@@ -62,7 +62,7 @@ const INPUT_HEADINGS = getHeadingRange(InputSheet)
 // ========================================
 const calendarPageName = getCell('E32')
 const CalendarSheet = spreadsheet.getSheetByName(calendarPageName)
-const CALENDAR_RANGE = getHeadingRange(CalendarSheet)
+const CALENDAR_PAGE_RANGE = getHeadingRange(CalendarSheet)
 
 // ==========================================
 // ===== Information about Google Calendars ==
