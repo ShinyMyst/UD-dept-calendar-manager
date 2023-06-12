@@ -1,57 +1,42 @@
 // Checks for completed entries on entry page & adds them to Calendar Page and Gcal.
-function processNewEntries(){
+function main(){
   var entries = getEnteredData()
-  entries.shift() // Remove heading line
-  rowNumber = 2 // Start on the row after the headings
+  const GSHEET_ENTRY = initGsheetClass()
+  const GCAL_ENTRY =  initGcalClass()
 
+  for (const [rowIndex, row] of entries) {
+    // Pair heading name with corresponding row value
+    var curEvent = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));
 
-  for (const row of entries) {
-    var entryDict = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));  // Pair headings with values in current row
-
-    // Try updating calendar with new entry data
-    // Delete row if successful otherwise move to next row
-    if (entryDict[HEADING['CheckBox']]){
-      if (updateSheets(entryDict, rowNumber)){
-        InputSheet.deleteRow(rowNumber)
-        Logger.log("SHEETS.  Input Page.  Deleted " + eventName)
-      }
-      else {
-        rowNumber ++
-      }
-      updateGcal(entryDict)
+    if (entryDict[HEADING['CheckBox']]){ 
+      processEvent(curEvent)
     }
-  
-    // Delete empty rows OR move to the next row.
-    else if (Object.values(entryDict).every(value => !value)){
-      InputSheet.deleteRow(rowNumber)
-    }
-    else {
-      rowNumber ++
-    }
-  }
+    else if (Object.values(curEvent).every(value => !value)){
+      InputSheet.deleteRow(rowIndex+2) // +1 to match sheets.  +1 to skip heading row
+    };
+  };
   sortSheet()
 };
+
+function processEvent(event){
+  // Checked Row
+  if (event[HEADING['CheckBox']]){
+    updateGsheet(event)
+    updateGcal(event)
+    // Delete row if both of these succeed.  
+    // Log a confirmation for added to sheet, added to cal, and deleted
+  };
+}
 
 // ###################
 // Helper Functions
 // ###################
 
-// Attempt to data on current row to Google Sheets or GCal
-// Sheet and Gcal functions perform validation checks.
-function updateEvents(entryDict, rowNumber){
-  if (entryDict[HEADING['CheckBox']]){
-    if (updateSheets(entryDict, rowNumber)){
-      InputSheet.deleteRow(rowNumber)
-    }
-    updateGcal(entryDict)
-  }
-};
-
-// Returns a list of all entries on entry page and the row they start on.
+// Returns an array consiting of lists.  Each list contains data for a particular row.
 function getEnteredData() {
   const range = InputSheet.getDataRange()
   var entries = range.getValues()
-  return entries
+  return entries.slice
 };
 
 // Sorts dates in the proper order & ensures groupings are retained correctly.
