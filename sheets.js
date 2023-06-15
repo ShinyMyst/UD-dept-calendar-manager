@@ -5,12 +5,20 @@ class SheetEntry {
   constructor() {
     this.entryDict = null;
     this.calendarDict = null;
+    this.sheetData = getEventList()
   };
 
   updateGsheet(eventData){
     this.entryDict = eventData
     this.calendarDict = createCalendarDict(eventData)
-    this._processInput()
+
+    if (!matchEventData(eventData, this.sheetData)){
+      console.log("DUPLICATE NOT FOUND")
+      this._processInput()
+    }
+    else {
+      console.log("DUPLICATE FOUND")
+    }
   }
 
   _processInput(){
@@ -104,8 +112,6 @@ class SheetEntry {
 // ###################
 // Helper Functions
 // ###################
-
-
 // Creates and returns a dictionary with all calendar headings as keys.
 function createCalendarDict(entryDict){
   var calendarDict = {}
@@ -123,3 +129,38 @@ function createCalendarDict(entryDict){
   }
   return calendarDict
 };
+
+// REFACTOR REFERENCES TO BE FLUID INSTEAD OF HARDCODED
+// Get all existing entries
+// Make sure data matches the ones called in event data
+function getEventList() {
+  const headerRow = 1; // Assuming the header row is the first row
+  const headers = CalendarSheet.getRange(headerRow, 1, 1, CalendarSheet.getLastColumn()).getValues()[0];
+
+  const dateIndex = headers.indexOf('Tentative Dates');
+  const eventNameIndex = headers.indexOf('Event');
+  const departmentIndex = headers.indexOf('Department');
+
+  const dataRange = CalendarSheet.getRange(headerRow + 1, 1, CalendarSheet.getLastRow() - headerRow, CalendarSheet.getLastColumn());
+  const eventMatrix = dataRange.getValues();
+
+  const eventList = eventMatrix.map(function(row) {
+    return {
+      Date: row[dateIndex],
+      Event: row[eventNameIndex],
+      Dept: row[departmentIndex]
+    };
+  });
+  return eventList;
+}
+
+// THIS HAS HARD CODING.  Perhaps change the pink data to reference config values?
+function matchEventData(eventData, sheetData) {
+  for (const entry of sheetData) {
+    if (eventData.Department === entry.Dept && eventData.Event === entry.Event) {
+      return true; // Match found
+    }
+  }
+  return false; // No match found
+}
+
