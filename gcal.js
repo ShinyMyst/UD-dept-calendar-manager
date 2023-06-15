@@ -29,6 +29,7 @@ class GcalEntry {
     
     else {
       Logger.log("Google Calendar.  Duplicate Entry " + title)
+      console.log("DATE", dates)
     }
   };
 
@@ -40,11 +41,15 @@ class GcalEntry {
     // Pull Dates
     var startDate = new Date(this.entryDict[HEADING['StartDate']])
     var endDate = new Date(this.entryDict[HEADING['EndDate']])
+    console.log("START", startDate)
+    console.log("END", endDate)
 
     if (this.entryDict[HEADING['StartTime']]) {
       // Pull Times
       var startTime = new Date(this.entryDict[HEADING['StartTime']])
       var endTime = new Date(this.entryDict[HEADING['EndTime']])
+      console.log("START TIME", startTime)
+      console.log("END TIME", endTime)
 
       // Add proper time to dates
       startDate.setHours(startTime.getHours())
@@ -56,6 +61,7 @@ class GcalEntry {
     else if (startDate === endDate) {
       return [startDate]
     }
+    console.log("FINAL RETURN", startDate, endDate)
     return [startDate, endDate]
   };
 
