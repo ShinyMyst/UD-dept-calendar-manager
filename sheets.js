@@ -1,77 +1,112 @@
-// Updates the calendar sheet.  Returns false if duplicate entry.
-function updateSheets(entryDict, rowNumber){
-  if (duplicateEntry(entryDict)){
-    var eventName = entryDict[HEADING['Event']]
-    Logger.log("Input Page.  Duplicate Entry " + eventName)
-    return false
-  };
-  entry = new SheetEntry(entryDict, rowNumber)
-  return entry.processInput()
-};
-
 // ###################
 // Entry Class
 // ###################
+
+//TODO - Try adding a create Sorting ID function.
+// This could simplify later function and allow date checking for duplicates
+
 class SheetEntry {
-  constructor(entryDict) {
-    this.entryDict = entryDict;
-    this.calendarDict = createCalendarDict(entryDict)
+  constructor() {
+    this.sheetData = getSheetData()
+    this.rowData = null
+  };
+  // ========================================
+  // ===== Public Functions =====
+  // ========================================
+
+  // Returns true if sheet data is valid
+  validEvent(eventData){
+    switch (true) {
+      // Duplicate Entry
+      /*
+      case (matchEventData(eventData, this.sheetData)):
+        console.log("DUPLICATE FOUND")
+        return false
+      */
+
+      // Add other validation here
+
+      default:
+        return true
+    }
   };
 
-  processInput(){
-    this.calendarDict[HEADING['EventID']] = ''
-    const START = this.entryDict[HEADING['StartDate']]
-    const END = this.entryDict[HEADING['EndDate']]
+  // Add event data to last row of sheet and to sheetData
+  addEvent(eventData){
+    this.rowData = this.fillRowData(eventData)
 
-    // Singular Month
-    if (MONTHS.includes(START)) {
-      this._writeSingularMonth(START)
-    }
-    // Singular Date
-    else if (START.getTime() == END.getTime()) {
-      this._writeSingularDate(START)
-    } 
-    // Date Range
-    else {
-      this._writeDateRange(START, END)
-    }
-    return true
+
+    // Variables for readability
+    const startDate = eventData[HEADING['StartDate']]
+    const endDate = eventData[HEADING['EndDate']]
+
+    // Write Entry
+    switch (true) {
+      // Singular Month
+      case MONTHS.includes(startDate):
+        this._writeSingularMonth(startDate);
+        break;   
+      // Singular Date
+      case endDate === '':
+        this._writeSingularDate(startDate);
+        break;
+      case startDate.getTime() == endDate:
+        this._writeSingularDate(startDate);
+        break;
+      // Date Range
+      default:
+        this._writeDateRange(startDate, endDate);
+        break;
+    }  
+    // Add the new entry to the list of events
+    var newSheetData = {
+      [HEADING['Event']]: eventData[HEADING['Event']],
+      [HEADING['Dept']]: eventData[HEADING['Dept']]
+    };
+    this.sheetData.push(newSheetData)
   };
 
+  // Sorts dates in the proper order & ensures groupings are retained correctly.
+  sortSheet(){
+    var lastColumn = CalendarSheet.getLastColumn();
+    const range = CalendarSheet.getRange(2, 1, CalendarSheet.getLastRow() - 1, lastColumn);
+    range.sort({column: lastColumn, ascending: true});
+  };
+
+// TODO - Try to reorganize this section
   // ========================================
   // ===== Writing and Deleting Entries =====
   // ========================================
 
-  // Writes to the next blank row on to the sheet.
+  // WRITES the data onto the sheet
   _writeRow() {
     var lastRow = CalendarSheet.getLastRow();
     var newRow = [];
 
-    for (var heading in this.calendarDict){
-      newRow.push(this.calendarDict[heading])
+    for (var heading in this.rowData){
+      newRow.push(this.rowData[heading])
     }
 
     const columnStart = 1
     const columnEnd = newRow.length
     const amountRows = 1
     CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
-    var eventName = this.entryDict[HEADING['Event']]
-    Logger.log("SHEETS. Calendar Page.  Added Entry " + eventName)
   };
 
+// TODO - Try to reorganize this section
   // ========================================
-  // ===== Types of Dates to Process =====
+  // ===== Types of Dates to Write =====
   // ========================================
   _writeSingularMonth(START){
   const date = new Date(`${START} 1, ${new Date().getFullYear()}`);   // Create Date object.
-  this.calendarDict[HEADING['DateRange']] = START
-  this.calendarDict[HEADING['Sorting']] = date.getTime() - 1
+  this.rowData[HEADING['DateRange']] = START
+  this.rowData[HEADING['Sorting']] = date.getTime() - 1
   this._writeRow()
-  }
+  };
 
   _writeSingularDate(START){
-    this.calendarDict[HEADING['DateRange']] = START
-    this.calendarDict[HEADING['Sorting']] = START.getTime()
+    this.rowData[HEADING['DateRange']] = START
+    this.rowData[HEADING['Sorting']] = START.getTime()
     this._writeRow()
   };
 
@@ -89,57 +124,73 @@ class SheetEntry {
 
     // Entries for each individual date
     for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.calendarDict[HEADING['EventID']] = this.entryDict[HEADING['Event']]
-      this.calendarDict[HEADING['DateRange']] = date
-      this.calendarDict[HEADING['Sorting']] = date.getTime()
+      this.rowData[HEADING['EventID']] = this.entryDict[HEADING['Event']]
+      this.rowData[HEADING['DateRange']] = date
+      this.rowData[HEADING['Sorting']] = date.getTime()
       this._writeRow()
       }
     // Singular entry for date range
     const dateString = createDateString(START, END)
-    this.calendarDict[HEADING['EventID']] = ''
-    this.calendarDict[HEADING['DateRange']] = dateString
-    this.calendarDict[HEADING['Sorting']] = START.getTime() - 1
+    this.rowData[HEADING['EventID']] = ''
+    this.rowData[HEADING['DateRange']] = dateString
+    this.rowData[HEADING['Sorting']] = START.getTime() - 1
     this._writeRow()
   };
+
+  // Creates and returns a dictionary with all calendar headings as keys.
+  fillRowData(eventData){
+    var rowData = {}
+    // Fill rowData with matching values
+    for (var index in SHEET_HEADINGS) {
+      var heading = SHEET_HEADINGS[index]
+      // Add matching data from entry page to calendarDict.
+      if (eventData.hasOwnProperty(heading)) {
+        rowData[heading] = eventData[heading];
+      } else {
+        rowData[heading] = ''
+      }
+    }
+    return rowData
+  };
 };
+
+
 
 // ###################
 // Helper Functions
 // ###################
+// Get list of all existing entries
+// [{ Event: 'Event', Department: 'Department' }]
+function getSheetData() {
+  const headerRow = 1; // Assuming the header row is the first row
+  const headers = CalendarSheet.getRange(headerRow, 1, 1, CalendarSheet.getLastColumn()).getValues()[0];
 
-// Returns True if duplicate entry exists; False otherwise.
-function duplicateEntry(entryDict){
-  function getEventList(){
-    var eventMatrix = CalendarSheet.getRange('A:C').getValues() // This is a list of lists that include event name and dept
-    var eventList = eventMatrix.map(function(row) {return row[0]}); // This is a list of event names
-    return [eventList, eventMatrix]
-  }
-  eventName = entryDict[HEADING['Event']]
-  eventCategory = entryDict[HEADING['Dept']]
-  eventEntry = [eventName, eventCategory]
-  const [eventList, eventMatrix] = getEventList()
-  if (eventList.includes(eventName)){
-    const found = eventMatrix.some(array => {
-      return array.join(',') === eventEntry.join(',');
-    });
-    return found;
-  } 
+  const dataRange = CalendarSheet.getRange(headerRow + 1, 1, CalendarSheet.getLastRow() - headerRow, CalendarSheet.getLastColumn());
+  const eventMatrix = dataRange.getValues();
+
+  const eventList = eventMatrix.map(function(row) {
+    return {
+      [HEADING['Event']]: row[headers.indexOf(HEADING['Event'])],
+      [HEADING['Dept']]: row[headers.indexOf(HEADING['Dept'])]
+    };
+  });
+
+  return eventList;
 };
 
-// Creates and returns a dictionary with all calendar headings as keys.
-function createCalendarDict(entryDict){
-  var calendarDict = {}
-  //CalendarSheet.getRange(CalendarPage['headingRange']).getValues()[0]; // get values returns a list of rows
-  const calendarHeadings = CALENDAR_RANGE
-  // Fill calendarDict with matching values
-  for (var index in calendarHeadings) {
-    var heading = calendarHeadings[index]
-    // Add matching data from entry page to calendarDict.
-    if (entryDict.hasOwnProperty(heading)) {
-      calendarDict[heading] = entryDict[heading];
-    } else {
-      calendarDict[heading] = ''
+
+
+/*
+// Checks for matching Event Name and Department
+function matchEventData(eventData, sheetData) {
+  for (const entry of sheetData) {
+    if (eventData.HEADING['Dept'] === entry.HEADING['Dept'] && eventData.HEADING['Event'] === entry.HEADING['Event']) {
+      return true; // Match found
     }
   }
-  return calendarDict
+  return false; // No match found
 };
+*/
+
+// Documentation Notes for Page
+// Duplicates only checks for Event Name & Department.
