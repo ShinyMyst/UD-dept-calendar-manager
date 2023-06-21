@@ -6,14 +6,19 @@ class InputEntry {
     this.rowIndex = 2
   };
 
+  // Update class parameters; return false if invalid
+  updateData(eventData){
+    //this.eventData = eventData
+    return this._validEvent(eventData)
+  }
+
   // Returns true if input data is valid
-  validEvent(eventData){
+  _validEvent(eventData){
     switch (true) {
       // Empty Row
       case Object.values(eventData).every(value => !value):
         InputSheet.deleteRow(this.rowIndex)
         return false
-
       // Box Unchecked
       case !eventData[HEADING['CheckBox']]:
         this.rowIndex ++
@@ -44,4 +49,17 @@ class InputEntry {
   incrementRow(){
     this.rowIndex ++
   };
+
+  deleteRow(){
+    InputSheet.deleteRow(this.rowIndex)
+  };
+
+  highlightRow(colorStr){
+    var range = InputSheet.getRange(this.rowIndex, 1, 1, InputSheet.getLastColumn())
+    range.setBackground(colorStr)
+  };
+
 };
+
+// TODO - further validation
+// TODO - Just organize the functions a bit and this page is done.
