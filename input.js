@@ -23,6 +23,19 @@ class InputEntry {
       case !eventData[HEADING['CheckBox']]:
         this.rowIndex ++
         return false
+      // No Start Date
+      case !eventData[HEADING['StartDate']]:
+        Logger.log("No start date chosen.")
+        this.highlightRow('red')
+        this.rowIndex ++
+        return false
+      // Time entered without a start or without an end
+      case (!((eventData[HEADING.StartTime] !== '') ^ (eventData[HEADING.EndTime] !== ''))):
+        Logger.log("Missing start or end time.")
+        this.highlightRow('red')
+        this.rowIndex ++
+        return false
+
 
       // Time Incorrect
       // function to highlight and skip TODO

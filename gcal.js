@@ -13,7 +13,9 @@ class GcalEntry {
   // Check if eventData is valid
   _validEvent(){
     switch (true) {
-      // Add validation here
+      case !this.eventData[HEADING['Calendar']]:
+        console.log(this.eventData[HEADING['Calendar']], "NO CALENASR")
+        return false
       default:
         return true
     }
@@ -26,7 +28,8 @@ class GcalEntry {
     var dates = this._getDates()
     var description = this._getDescription()
     var title = this.eventData[HEADING['Event']]
-
+    console.log(title)
+    console.log(dates)
     if (!calendar.getEventsForDay(dates[0], {search: title}).length){
       if (this.eventData[HEADING['StartTime']]){
         var event = calendar.createEvent(title, ...dates);
@@ -42,6 +45,7 @@ class GcalEntry {
     else {
       Logger.log("Google Calendar.  Duplicate Entry " + title)
     }
+    return this.eventData[HEADING['Event']], this.eventData[HEADING['StartDate']]
   };
 
   // ========================================

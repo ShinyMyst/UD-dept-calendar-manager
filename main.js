@@ -7,6 +7,8 @@ function main(){
   const entries = input.getEnteredData()
 
   for (const row of entries) {
+    console.log("NEXT ROW")
+    console.log(row[6])
     // Pair heading name with corresponding row value
     var curEventData = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));
 
@@ -17,12 +19,12 @@ function main(){
       continue
     }
     if (!sheet.updateData(curEventData)){
-      console.log("DUPE")
-      input.highlightRow('light orange 1')
+      input.highlightRow('orange')
       input.incrementRow
       continue
     };
     if (!gcal.updateData(curEventData)){
+        input.highlightRow('blue')
       input.incrementRow
       continue
     };
@@ -31,14 +33,16 @@ function main(){
     // ===== Add Entries =====
     // ==========================
     var entry = sheet.addEvent()
-    Logger.log("Added ${entry[0]} to Sheet on entry[1]")
+    //Logger.log("Added ${entry[0]} to Sheet on entry[1]")
     var entry = gcal.addEvent()
-    Logger.log("Added ${entry[0]} to Gcal on entry[1]")
+    //Logger.log("Added ${entry[0]} to Gcal on entry[1]")
     input.deleteRow()
-    Logger.log("Deleted", row)
+    //Logger.log("Deleted", row)
   };
 };
     
+
+// TODO CURRENT ISSUE is false negative with duplication detection
 
 // TODO replace all console.logs with better Logger.log messages when done reformatting
 // TODO try excepts?

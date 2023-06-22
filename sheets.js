@@ -25,11 +25,10 @@ class SheetEntry {
   _validEvent(){
     switch (true) {
       // Duplicate Entry
-      /*
-      case (matchthis.EventData(this.eventData, this.sheetData)):
+      case (this.checkDuplicates()):
         console.log("DUPLICATE FOUND")
         return false
-      */      default:
+     default:
         return true
     }
   };
@@ -37,7 +36,6 @@ class SheetEntry {
   // Add event data to last row of sheet and to sheetData
   addEvent(){
     this.rowData = this.fillRowData(this.eventData)
-
 
     // Variables for readability
     const startDate = this.eventData[HEADING['StartDate']]
@@ -61,12 +59,16 @@ class SheetEntry {
         this._writeDateRange(startDate, endDate);
         break;
     }  
+
+    
     // Add the new entry to the list of events
     var newSheetData = {
       [HEADING['Event']]: this.eventData[HEADING['Event']],
-      [HEADING['Dept']]: this.eventData[HEADING['Dept']]
+      [HEADING['Dept']]: this.eventData[HEADING['Dept']],
+      [HEADING['Sorting']]: this.eventData[HEADING['Sorting']]
     };
     this.sheetData.push(newSheetData)
+    return this.eventData[HEADING['Event']], this.eventData[HEADING['StartDate']]
   };
 
   // Sorts dates in the proper order & ensures groupings are retained correctly.
@@ -127,7 +129,7 @@ class SheetEntry {
 
     // Entries for each individual date
     for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.rowData[HEADING['EventID']] = this.entryDict[HEADING['Event']]
+      this.rowData[HEADING['EventID']] = this.rowData[HEADING['Event']]
       this.rowData[HEADING['DateRange']] = date
       this.rowData[HEADING['Sorting']] = date.getTime()
       this._writeRow()
@@ -155,8 +157,17 @@ class SheetEntry {
     }
     return rowData
   };
-};
 
+  // Checks for matching Event Name, Department, and Sorting Number
+  checkDuplicates() {
+    for (const entry of this.sheetData) {
+      if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
+        return true; // Match found
+      }
+    }
+    return false; // No match found
+  };
+};
 
 
 // ###################
@@ -168,34 +179,31 @@ function getSheetData() {
   const headerRow = 1; // Assuming the header row is the first row
   const headers = CalendarSheet.getRange(headerRow, 1, 1, CalendarSheet.getLastColumn()).getValues()[0];
 
-  const dataRange = CalendarSheet.getRange(headerRow + 1, 1, CalendarSheet.getLastRow() - headerRow, CalendarSheet.getLastColumn());
+  const numRows = CalendarSheet.getLastRow() - headerRow;
+  const numColumns = CalendarSheet.getLastColumn();
+
+  if (numRows < 1) {
+    // Return blank or an empty array, depending on your preference
+    return []; // or return '';
+  }
+
+  const dataRange = CalendarSheet.getRange(headerRow + 1, 1, numRows, numColumns);
   const eventMatrix = dataRange.getValues();
 
   const eventList = eventMatrix.map(function(row) {
     return {
       [HEADING['Event']]: row[headers.indexOf(HEADING['Event'])],
-      [HEADING['Dept']]: row[headers.indexOf(HEADING['Dept'])]
+      [HEADING['Dept']]: row[headers.indexOf(HEADING['Dept'])],
+      [HEADING['Sorting']]: row[headers.indexOf(HEADING['Sorting'])]
     };
   });
+
+  // Rest of your code
 
   return eventList;
 };
 
-
-
-/*
-// Checks for matching Event Name and Department
-function matchthis.EventData(this.eventData, sheetData) {
-  for (const entry of sheetData) {
-    if (this.eventData.HEADING['Dept'] === entry.HEADING['Dept'] && this.eventData.HEADING['Event'] === entry.HEADING['Event']) {
-      return true; // Match found
-    }
-  }
-  return false; // No match found
-};
-*/
-
 // Documentation Notes for Page
-// Duplicates only checks for Event Name & Department.
+// Duplicates only checks for Event Name & Department & Sorting Number
 
 //TODO split things up into smaller chunks
