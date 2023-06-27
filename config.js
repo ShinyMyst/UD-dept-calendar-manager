@@ -62,29 +62,29 @@ const INPUT_HEADINGS = getHeadingRange(InputSheet)
 // ========================================
 const calendarPageName = getCell('E32')
 const CalendarSheet = spreadsheet.getSheetByName(calendarPageName)
-const CALENDAR_PAGE_RANGE = getHeadingRange(CalendarSheet)
+const SHEET_HEADINGS = getHeadingRange(CalendarSheet)
 
 // ==========================================
 // ===== Information about Google Calendars ==
 // ==========================================
 const CALENDAR_NAME = {
-  'General': getCell('D42'),
-  'Operations': getCell('D43'),
-  'Reslife': getCell('D44'),
-  'Conferences': getCell('D45'),
-  'Training': getCell('D46'),
-  'AVIATE': getCell('D47'),
-  'Employment': getCell('D48')
+  'General': getCell('D43'),
+  'Operations': getCell('D44'),
+  'Reslife': getCell('D45'),
+  'Conferences': getCell('D46'),
+  'Training': getCell('D47'),
+  'AVIATE': getCell('D48'),
+  'Employment': getCell('D49')
 }
 
 const CALENDAR_LINK = {
-  'General': CalendarApp.getCalendarById(getCell('E42')),
-  'Operations': CalendarApp.getCalendarById(getCell('E43')),
-  'ResLife': CalendarApp.getCalendarById(getCell('E44')),
-  'Conferences': CalendarApp.getCalendarById(getCell('E45')),
-  'Training': CalendarApp.getCalendarById(getCell('E46')),
-  'AVIATE': CalendarApp.getCalendarById(getCell('E47')),
-  'Employment': CalendarApp.getCalendarById(getCell('E48'))
+  'General': CalendarApp.getCalendarById(getCell('E43')),
+  'Operations': CalendarApp.getCalendarById(getCell('E44')),
+  'ResLife': CalendarApp.getCalendarById(getCell('E45')),
+  'Conferences': CalendarApp.getCalendarById(getCell('E46')),
+  'Training': CalendarApp.getCalendarById(getCell('E47')),
+  'AVIATE': CalendarApp.getCalendarById(getCell('E48')),
+  'Employment': CalendarApp.getCalendarById(getCell('E49'))
 }
 
 // ========================================

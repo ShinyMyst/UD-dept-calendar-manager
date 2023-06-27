@@ -26,7 +26,7 @@ class SheetEntry {
     switch (true) {
       // Duplicate Entry
       case (this.checkDuplicates()):
-        console.log("DUPLICATE FOUND")
+        Logger.log("Duplicate Event")
         return false
      default:
         return true
@@ -160,7 +160,12 @@ class SheetEntry {
 
   // Checks for matching Event Name, Department, and Sorting Number
   checkDuplicates() {
+    // TODO account for months in a better fashion
+    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
+      return false
+    }
     for (const entry of this.sheetData) {
+      console.log(this.eventData[HEADING['StartDate']])
       if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
         return true; // Match found
       }

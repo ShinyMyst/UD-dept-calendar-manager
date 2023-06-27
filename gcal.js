@@ -14,8 +14,18 @@ class GcalEntry {
   _validEvent(){
     switch (true) {
       case !this.eventData[HEADING['Calendar']]:
-        console.log(this.eventData[HEADING['Calendar']], "NO CALENASR")
+        Logger.log('No calendar specified.')
         return false
+
+      case MONTHS.includes(this.eventData[HEADING['StartDate']]) && this.eventData[HEADING['Calendar']]:
+        console.log('Calendar specified but unable to add.')
+        return true
+      
+      // Calendar is not null
+      // TODO, note that MONTH events can't be added but pass anyway
+
+      // Not Duplicate
+
       default:
         return true
     }
@@ -23,40 +33,43 @@ class GcalEntry {
 
 
   addEvent(){
+    // TODO restructure so this is only needed once
+    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
+      return
+    }
     var calendar = this._getCalendar()
     //var dates = this._getDateRange()
     var dates = this._getDates()
     var description = this._getDescription()
     var title = this.eventData[HEADING['Event']]
-    console.log(title)
-    console.log(dates)
-    if (!calendar.getEventsForDay(dates[0], {search: title}).length){
-      if (this.eventData[HEADING['StartTime']]){
-        var event = calendar.createEvent(title, ...dates);
-      }
-      else {
-        console.log(dates)
-        var event = calendar.createAllDayEvent(title, ...dates);
-      }
-      event.setDescription(description);
-      Logger.log("Google Calendar.  Added Entry " + title + " " + dates);        
+
+    if (this.eventData[HEADING['StartTime']]){
+      var event = calendar.createEvent(title, ...dates);
     }
-    
     else {
-      Logger.log("Google Calendar.  Duplicate Entry " + title)
+      var event = calendar.createAllDayEvent(title, ...dates);
     }
+    event.setDescription(description);
+    Logger.log("Google Calendar.  Added Entry " + title + " " + dates);        
+    
     return this.eventData[HEADING['Event']], this.eventData[HEADING['StartDate']]
   };
 
   // ========================================
   // ===== Test Function Sort Later=====
   // ========================================
-
+  // TODO - reorganize this funciton
   _getDates() {
     // Pull Dates
     var startDate = new Date(this.eventData[HEADING['StartDate']]);
-    var endDate = new Date(this.eventData[HEADING['EndDate']]);
+    if (this.eventData[HEADING['EndDate']]){
+      var endDate = this.eventData[HEADING['EndDate']];
+    }
+    else {
+      var endDate = new Date(this.eventData[HEADING['StartDate']])
+    }
 
+    // Start time given
     if (this.eventData[HEADING['StartTime']]) {
       // Pull Times
       var startTime = new Date(this.eventData[HEADING['StartTime']]);
@@ -69,13 +82,14 @@ class GcalEntry {
       endDate.setMinutes(endTime.getMinutes());
     }
 
-    if (isNaN(endDate.getTime()) || endDate === '') {
-      // Handle empty endDate
-      return [startDate];
-    } else if (startDate.getTime() === endDate.getTime()) {
-      // Handle same start and end date
-      return [startDate];
+    else {
+      endDate.setDate(endDate.getDate() + 1); // Add one to date so that it spans properly
+      return [startDate, endDate];
     }
+
+
+
+    // Start Date and End Date are equal
 
     return [startDate, endDate];
   };

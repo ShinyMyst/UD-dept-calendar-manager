@@ -7,8 +7,7 @@ function main(){
   const entries = input.getEnteredData()
 
   for (const row of entries) {
-    console.log("NEXT ROW")
-    console.log(row[6])
+    console.log('=====', row[6], '=====')
     // Pair heading name with corresponding row value
     var curEventData = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));
 
@@ -20,12 +19,12 @@ function main(){
     }
     if (!sheet.updateData(curEventData)){
       input.highlightRow('orange')
-      input.incrementRow
+      input.incrementRow()
       continue
     };
     if (!gcal.updateData(curEventData)){
-        input.highlightRow('blue')
-      input.incrementRow
+      input.highlightRow('blue')
+      input.incrementRow()
       continue
     };
 
@@ -42,9 +41,13 @@ function main(){
 };
     
 
-// TODO CURRENT ISSUE is false negative with duplication detection
+// TODO, reformat config page
+// TODO, include the temp calendars for training aviate employement
+// TODO, Add dropdown options on Input Page
+// TODO account for no calendar given
+// TEST CASES
+
+// BLUE ERROR - Month and Calendar is getting deleted?
 
 // TODO replace all console.logs with better Logger.log messages when done reformatting
-// TODO try excepts?
-// TODO better config page
-// TODO range skips last date in range
+// TODO restructure the HEADING with just single variables
