@@ -46,12 +46,12 @@ class SheetEntry {
       // Singular Month
       case MONTHS.includes(startDate):
         this._writeSingularMonth(startDate);
-        break;   
+        break;
       // Singular Date
       case endDate === '':
         this._writeSingularDate(startDate);
         break;
-      case startDate.getTime() == endDate:
+      case startDate.getTime() == endDate.getTime():
         this._writeSingularDate(startDate);
         break;
       // Date Range
@@ -60,7 +60,6 @@ class SheetEntry {
         break;
     }  
 
-    
     // Add the new entry to the list of events
     var newSheetData = {
       [HEADING['Event']]: this.eventData[HEADING['Event']],
@@ -68,7 +67,6 @@ class SheetEntry {
       [HEADING['Sorting']]: this.eventData[HEADING['Sorting']]
     };
     this.sheetData.push(newSheetData)
-    return this.eventData[HEADING['Event']], this.eventData[HEADING['StartDate']]
   };
 
   // Sorts dates in the proper order & ensures groupings are retained correctly.
@@ -165,7 +163,6 @@ class SheetEntry {
       return false
     }
     for (const entry of this.sheetData) {
-      console.log(this.eventData[HEADING['StartDate']])
       if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
         return true; // Match found
       }

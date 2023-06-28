@@ -14,7 +14,6 @@ class InputEntry {
 
   // Returns true if input data is valid
   _validEvent(eventData){
-    console.log(eventData[HEADING['StartDate']])
     switch (true) {
       // Empty Row
       case Object.values(eventData).every(value => !value):
@@ -26,39 +25,33 @@ class InputEntry {
         return false
 
       // ERRORS //
-      // No calendar given
-      case !eventData[HEADING['Calendar']]:
-        Logger.log("No calendar.")
-        this.highlightRow('red')
-        this.rowIndex ++
-        return false
       // No Start Date
       case !eventData[HEADING['StartDate']]:
-        Logger.log("No start date chosen.")
+        Logger.log("ERROR - No start date chosen.")
         this.highlightRow('red')
         this.rowIndex ++
         return false
       // Start time with no end time
       case ((eventData[HEADING['StartTime']] !== "") && (eventData[HEADING['EndTime']] === (""))):
-        Logger.log("Missing end time.")
+        Logger.log("ERROR - Missing end time.")
         this.highlightRow('red')
         this.rowIndex ++
         return false
       // End time with no start time
       case ((eventData[HEADING['StartTime']] === "") && (eventData[HEADING['EndTime']] !== (""))):
-        Logger.log("Missing start time.")
+        Logger.log("ERROR - Missing start time.")
         this.highlightRow('red')
         this.rowIndex ++
         return false
       // No Event
        case !eventData[HEADING['Event']]:
-        Logger.log("No event entered.")
+        Logger.log("ERROR - No event entered.")
         this.highlightRow('red')
         this.rowIndex ++
         return false     
       // Invalid Date
       case !(eventData[HEADING['StartDate']] instanceof Date) && !MONTHS.includes(eventData[HEADING['StartDate']]):
-        Logger.log("Invalid date")
+        Logger.log("ERROR - Invalid date")
         this.highlightRow('red')
         this.rowIndex ++
         return false
@@ -66,10 +59,16 @@ class InputEntry {
       case (
         (eventData[HEADING['StartTime']] && !(eventData[HEADING['StartTime']] instanceof Date)) ||
         (eventData[HEADING['EndTime']] && !(eventData[HEADING['EndTime']] instanceof Date))):
-        Logger.log('Invalid Time')
+        Logger.log('ERROR - Invalid Time')
         this.highlightRow('red')
         this.rowIndex ++
         return false   
+
+      case (eventData[HEADING['Calendar']] && !CALENDAR_NAME.hasOwnProperty(eventData[HEADING['Calendar']])):
+        Logger.log("ERROR - Invalid calendar")
+        this.highlightRow('red')
+        this.rowIndex ++
+        return false
 
       default:
         return true
@@ -81,6 +80,7 @@ class InputEntry {
     const range = InputSheet.getDataRange()
     var entries = range.getValues()
     return entries.slice(1)
+    // This implementation won't return empty rows at bottom of page.
   };
 
   incrementRow(){

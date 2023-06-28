@@ -13,19 +13,6 @@ class GcalEntry {
   // Check if eventData is valid
   _validEvent(){
     switch (true) {
-      case !this.eventData[HEADING['Calendar']]:
-        Logger.log('No calendar specified.')
-        return false
-
-      case MONTHS.includes(this.eventData[HEADING['StartDate']]) && this.eventData[HEADING['Calendar']]:
-        console.log('Calendar specified but unable to add.')
-        return true
-      
-      // Calendar is not null
-      // TODO, note that MONTH events can't be added but pass anyway
-
-      // Not Duplicate
-
       default:
         return true
     }
@@ -50,7 +37,6 @@ class GcalEntry {
       var event = calendar.createAllDayEvent(title, ...dates);
     }
     event.setDescription(description);
-    Logger.log("Google Calendar.  Added Entry " + title + " " + dates);        
     
     return this.eventData[HEADING['Event']], this.eventData[HEADING['StartDate']]
   };

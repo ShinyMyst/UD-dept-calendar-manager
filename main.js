@@ -7,9 +7,10 @@ function main(){
   const entries = input.getEnteredData()
 
   for (const row of entries) {
-    console.log('=====', row[6], '=====')
     // Pair heading name with corresponding row value
     var curEventData = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));
+    Logger.log(`===== ${curEventData[HEADING['Event']]} =====`);
+
 
   // ============================
   // ===== Update & Validate ====
@@ -31,23 +32,28 @@ function main(){
     // ==========================
     // ===== Add Entries =====
     // ==========================
-    var entry = sheet.addEvent()
-    //Logger.log("Added ${entry[0]} to Sheet on entry[1]")
-    var entry = gcal.addEvent()
-    //Logger.log("Added ${entry[0]} to Gcal on entry[1]")
+    sheet.addEvent()
+    Logger.log("Added to sheet.")
+    if (curEventData['Calendar']){
+      gcal.addEvent()
+      Logger.log("Added to Gcal")
+    }
+    else {
+      Logger.log('No calendar requested.')
+    }
     input.deleteRow()
-    //Logger.log("Deleted", row)
   };
+  sheet.sortSheet()
 };
-    
 
-// TODO, reformat config page
-// TODO, include the temp calendars for training aviate employement
+
+// MAIN SHEET
 // TODO, Add dropdown options on Input Page
-// TODO account for no calendar given
-// TEST CASES
+// Rearrange Headings and titles 
 
-// BLUE ERROR - Month and Calendar is getting deleted?
-
-// TODO replace all console.logs with better Logger.log messages when done reformatting
+// Refactor
+// TODO - Duplicates are only caught for existing entries, not those added in same batch
 // TODO restructure the HEADING with just single variables
+// Actually refactor code
+
+

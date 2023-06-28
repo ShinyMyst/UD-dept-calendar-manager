@@ -1,7 +1,7 @@
 // ###################
 // Manual Entry
 // ###################
-const spreadsheetId = '1IfsuG-r40DGlyBh4jF-IpbOze0dM0_qeMMF7joS-5iA'
+const spreadsheetId = 'i'
 const configPageName = "config"
 
 const MONTHS = [
@@ -53,14 +53,14 @@ function getHeadingRange(sheet) {
 // ========================================
 // ===== Information about Input Page =====
 // ========================================
-const inputPageName = getCell('E33')
+const inputPageName = getCell('B3')
 const InputSheet = spreadsheet.getSheetByName(inputPageName)
 const INPUT_HEADINGS = getHeadingRange(InputSheet)
 
 // ========================================
 // ===== Information about Calendar Page ==
 // ========================================
-const calendarPageName = getCell('E32')
+const calendarPageName = getCell('B2')
 const CalendarSheet = spreadsheet.getSheetByName(calendarPageName)
 const SHEET_HEADINGS = getHeadingRange(CalendarSheet)
 
@@ -68,23 +68,23 @@ const SHEET_HEADINGS = getHeadingRange(CalendarSheet)
 // ===== Information about Google Calendars ==
 // ==========================================
 const CALENDAR_NAME = {
-  'General': getCell('D43'),
-  'Operations': getCell('D44'),
-  'Reslife': getCell('D45'),
-  'Conferences': getCell('D46'),
-  'Training': getCell('D47'),
-  'AVIATE': getCell('D48'),
-  'Employment': getCell('D49')
+  'General': getCell('A6'),
+  'Operations': getCell('A7'),
+  'ResLife': getCell('A8'),
+  'Conferences': getCell('A9'),
+  'Training': getCell('A10'),
+  'AVIATE': getCell('A11'),
+  'Employment': getCell('A12')
 }
 
 const CALENDAR_LINK = {
-  'General': CalendarApp.getCalendarById(getCell('E43')),
-  'Operations': CalendarApp.getCalendarById(getCell('E44')),
-  'ResLife': CalendarApp.getCalendarById(getCell('E45')),
-  'Conferences': CalendarApp.getCalendarById(getCell('E46')),
-  'Training': CalendarApp.getCalendarById(getCell('E47')),
-  'AVIATE': CalendarApp.getCalendarById(getCell('E48')),
-  'Employment': CalendarApp.getCalendarById(getCell('E49'))
+  'General': CalendarApp.getCalendarById(getCell('B6')),
+  'Operations': CalendarApp.getCalendarById(getCell('B7')),
+  'ResLife': CalendarApp.getCalendarById(getCell('B8')),
+  'Conferences': CalendarApp.getCalendarById(getCell('B9')),
+  'Training': CalendarApp.getCalendarById(getCell('B10')),
+  'AVIATE': CalendarApp.getCalendarById(getCell('B11')),
+  'Employment': CalendarApp.getCalendarById(getCell('B12'))
 }
 
 // ========================================
@@ -94,19 +94,19 @@ const CALENDAR_LINK = {
 // This dict ensures the headings have a static reference name.
 // {'Name in Code': Name in Spreadsheet}
 const HEADING = {
-  'CheckBox': getCell('A32'),
-  'StartDate': getCell('A33'),
-  'EndDate': getCell('A34'),
-  'StartTime': getCell('A35'),
-  'EndTime': getCell('A36'),
-  'Event': getCell('A37'),
-  'Dept': getCell('A38'),
-  'Category': getCell('A39'),
-  'Calendar': getCell('A40'),
-  'Staff': getCell('A41'),
-  'Privacy': getCell('A42'),
-  'Details': getCell('A43'),
-  'Sorting': getCell('A44'),
-  'EventID': getCell('A45'),
-  'DateRange': getCell('A46')
+  'CheckBox': getCell('D2'),
+  'StartDate': getCell('D3'),
+  'EndDate': getCell('D4'),
+  'StartTime': getCell('D5'),
+  'EndTime': getCell('D6'),
+  'Event': getCell('D7'),
+  'Dept': getCell('D8'),
+  'Category': getCell('D9'),
+  'Calendar': getCell('D10'),
+  'Staff': getCell('D11'),
+  'Privacy': getCell('D12'),
+  'Details': getCell('D14'),
+  'Sorting': getCell('D15'),
+  'EventID': getCell('D16'),
+  'DateRange': getCell('D17')
 };
