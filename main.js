@@ -1,62 +1,59 @@
 // Checks for completed entries on entry page & adds them to Calendar Page and Gcal.
-function processNewEntries(){
-  var entries = getEnteredData()
-  entries.shift() // Remove heading line
-  rowNumber = 2 // Start on the row after the headings
+function main(){
+  input = new InputEntry()
+  sheet = new SheetEntry()
+  gcal = new GcalEntry()
 
+  const entries = input.getEnteredData()
 
   for (const row of entries) {
-    var entryDict = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));  // Pair headings with values in current row
+    // Pair heading name with corresponding row value
+    var curEventData = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));
+    Logger.log(`===== ${curEventData[HEADING['Event']]} =====`);
 
-    // Try updating calendar with new entry data
-    // Delete row if successful otherwise move to next row
-    if (entryDict[HEADING['CheckBox']]){
-      if (updateSheets(entryDict, rowNumber)){
-        InputSheet.deleteRow(rowNumber)
-        Logger.log("SHEETS.  Input Page.  Deleted " + eventName)
-      }
-      else {
-        rowNumber ++
-      }
-      updateGcal(entryDict)
+
+  // ============================
+  // ===== Update & Validate ====
+  // ============================
+    if (!input.updateData(curEventData)){
+      continue
     }
-  
-    // Delete empty rows OR move to the next row.
-    else if (Object.values(entryDict).every(value => !value)){
-      InputSheet.deleteRow(rowNumber)
+    if (!sheet.updateData(curEventData)){
+      input.highlightRow('orange')
+      input.incrementRow()
+      continue
+    };
+    if (!gcal.updateData(curEventData)){
+      input.highlightRow('blue')
+      input.incrementRow()
+      continue
+    };
+
+    // ==========================
+    // ===== Add Entries =====
+    // ==========================
+    sheet.addEvent()
+    Logger.log("Added to sheet.")
+    if (curEventData['Calendar']){
+      gcal.addEvent()
+      Logger.log("Added to Gcal")
     }
     else {
-      rowNumber ++
+      Logger.log('No calendar requested.')
     }
-  }
-  sortSheet()
+    input.deleteRow()
+  };
+  sheet.sortSheet()
 };
 
-// ###################
-// Helper Functions
-// ###################
 
-// Attempt to data on current row to Google Sheets or GCal
-// Sheet and Gcal functions perform validation checks.
-function updateEvents(entryDict, rowNumber){
-  if (entryDict[HEADING['CheckBox']]){
-    if (updateSheets(entryDict, rowNumber)){
-      InputSheet.deleteRow(rowNumber)
-    }
-    updateGcal(entryDict)
-  }
-};
+// MAIN SHEET
+// TODO, Add dropdown options on Input Page
+// Rearrange Headings and titles 
 
-// Returns a list of all entries on entry page and the row they start on.
-function getEnteredData() {
-  const range = InputSheet.getDataRange()
-  var entries = range.getValues()
-  return entries
-};
+// Refactor
+// TODO - Duplicates are only caught for existing entries, not those added in same batch
+// TODO restructure the HEADING with just single variables
+// Actually refactor code
 
-// Sorts dates in the proper order & ensures groupings are retained correctly.
-function sortSheet(){
-  var lastColumn = CalendarSheet.getLastColumn();
-  const range = CalendarSheet.getRange(2, 1, CalendarSheet.getLastRow() - 1, lastColumn);
-  range.sort({column: lastColumn, ascending: true});
-};
+

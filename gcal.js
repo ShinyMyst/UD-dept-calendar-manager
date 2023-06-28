@@ -1,71 +1,92 @@
-function updateGcal(entryDict){
-  // Filter out entries without a specific date
-  if (!MONTHS.includes(entryDict[HEADING['StartDate']])){
-    new GcalEntry(entryDict)
-  }
-};
-
 class GcalEntry {  
-  constructor(entryDict) {
-    this.entryDict = entryDict;
-    this._processInput();
-    };
+  constructor() {
+    this.eventData = null;
 
-  _processInput(){
+  };
+
+  // Update class parameters; return false if invalid
+  updateData(eventData){
+    this.eventData = eventData
+    return this._validEvent()
+  }
+
+  // Check if eventData is valid
+  _validEvent(){
+    switch (true) {
+      default:
+        return true
+    }
+  };
+
+
+  addEvent(){
+    // TODO restructure so this is only needed once
+    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
+      return
+    }
     var calendar = this._getCalendar()
     //var dates = this._getDateRange()
     var dates = this._getDates()
     var description = this._getDescription()
-    var title = this.entryDict[HEADING['Event']]
+    var title = this.eventData[HEADING['Event']]
 
-    if (!calendar.getEventsForDay(dates[0], {search: title}).length){
-      if (this.entryDict[HEADING['StartTime']]){
-        var event = calendar.createEvent(title, ...dates);
-      }
-      else {
-        var event = calendar.createAllDayEvent(title, ...dates);
-      }
-      event.setDescription(description);
-      Logger.log("Google Calendar.  Added Entry " + title + " " + dates);        
+    if (this.eventData[HEADING['StartTime']]){
+      var event = calendar.createEvent(title, ...dates);
     }
-    
     else {
-      Logger.log("Google Calendar.  Duplicate Entry " + title)
+      var event = calendar.createAllDayEvent(title, ...dates);
     }
+    event.setDescription(description);
+    
+    return this.eventData[HEADING['Event']], this.eventData[HEADING['StartDate']]
   };
 
   // ========================================
   // ===== Test Function Sort Later=====
   // ========================================
-
-  _getDates(){
+  // TODO - reorganize this funciton
+  _getDates() {
     // Pull Dates
-    var startDate = new Date(this.entryDict[HEADING['StartDate']])
-    var endDate = new Date(this.entryDict[HEADING['EndDate']])
+    var startDate = new Date(this.eventData[HEADING['StartDate']]);
+    if (this.eventData[HEADING['EndDate']]){
+      var endDate = this.eventData[HEADING['EndDate']];
+    }
+    else {
+      var endDate = new Date(this.eventData[HEADING['StartDate']])
+    }
 
-    if (this.entryDict[HEADING['StartTime']]) {
+    // Start time given
+    if (this.eventData[HEADING['StartTime']]) {
       // Pull Times
-      var startTime = new Date(this.entryDict[HEADING['StartTime']])
-      var endTime = new Date(this.entryDict[HEADING['EndTime']])
+      var startTime = new Date(this.eventData[HEADING['StartTime']]);
+      var endTime = new Date(this.eventData[HEADING['EndTime']]);
 
       // Add proper time to dates
-      startDate.setHours(startTime.getHours())
-      startDate.setMinutes( startTime.getMinutes())
-      endDate.setHours(endTime.getHours())
-      endDate.setMinutes(endTime.getMinutes())
+      startDate.setHours(startTime.getHours());
+      startDate.setMinutes(startTime.getMinutes());
+      endDate.setHours(endTime.getHours());
+      endDate.setMinutes(endTime.getMinutes());
     }
 
-    else if (startDate === endDate) {
-      return [startDate]
+    else {
+      endDate.setDate(endDate.getDate() + 1); // Add one to date so that it spans properly
+      return [startDate, endDate];
     }
-    return [startDate, endDate]
+
+
+
+    // Start Date and End Date are equal
+
+    return [startDate, endDate];
   };
 
+
+  // TODO make this more dynamic
   // ========================================
   // ===== Get Event Information =====
   // ========================================
   _getCalendar(){
-    switch(this.entryDict[HEADING['Calendar']]) {
+    switch(this.eventData[HEADING['Calendar']]) {
       case CALENDAR_NAME['Operations']:
         return CALENDAR_LINK['Operations'] 
 
@@ -91,8 +112,8 @@ class GcalEntry {
 
   _getDateRange(){
     const DAY_IN_MS = 86400000; // number of milliseconds in a day
-    const START = this.entryDict[HEADING['StartDate']]
-    const END = this.entryDict[HEADING['EndDate']]
+    const START = this.eventData[HEADING['StartDate']]
+    const END = this.eventData[HEADING['EndDate']]
     const DAY = new Date(DAY_IN_MS);
     if (START.getTime() === END.getTime()) {
       return [START]
@@ -102,9 +123,9 @@ class GcalEntry {
 
   _getDescription(){
     var eventDescription = `
-        Category: ${this.entryDict['Category']}
-        Staff Responsible: ${this.entryDict['Primary Staff Responsible']}
-        Description: ${this.entryDict['Description']}
+        Category: ${this.eventData['Category']}
+        Staff Responsible: ${this.eventData['Primary Staff Responsible']}
+        Description: ${this.eventData['Description']}
       `;
     return eventDescription
   }

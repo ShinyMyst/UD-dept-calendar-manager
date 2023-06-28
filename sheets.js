@@ -9,48 +9,49 @@ class SheetEntry {
   constructor() {
     this.sheetData = getSheetData()
     this.rowData = null
+    this.eventData = null
   };
   // ========================================
   // ===== Public Functions =====
   // ========================================
 
-  // Returns true if sheet data is valid
-  validEvent(eventData){
+  // Update class parameters; return false if invalid
+  updateData(eventData){
+    this.eventData = eventData
+    return this._validEvent()
+  };
+
+  // Check if this.eventData is valid
+  _validEvent(){
     switch (true) {
       // Duplicate Entry
-      /*
-      case (matchEventData(eventData, this.sheetData)):
-        console.log("DUPLICATE FOUND")
+      case (this.checkDuplicates()):
+        Logger.log("Duplicate Event")
         return false
-      */
-
-      // Add other validation here
-
-      default:
+     default:
         return true
     }
   };
 
   // Add event data to last row of sheet and to sheetData
-  addEvent(eventData){
-    this.rowData = this.fillRowData(eventData)
-
+  addEvent(){
+    this.rowData = this.fillRowData(this.eventData)
 
     // Variables for readability
-    const startDate = eventData[HEADING['StartDate']]
-    const endDate = eventData[HEADING['EndDate']]
+    const startDate = this.eventData[HEADING['StartDate']]
+    const endDate = this.eventData[HEADING['EndDate']]
 
     // Write Entry
     switch (true) {
       // Singular Month
       case MONTHS.includes(startDate):
         this._writeSingularMonth(startDate);
-        break;   
+        break;
       // Singular Date
       case endDate === '':
         this._writeSingularDate(startDate);
         break;
-      case startDate.getTime() == endDate:
+      case startDate.getTime() == endDate.getTime():
         this._writeSingularDate(startDate);
         break;
       // Date Range
@@ -58,10 +59,12 @@ class SheetEntry {
         this._writeDateRange(startDate, endDate);
         break;
     }  
+
     // Add the new entry to the list of events
     var newSheetData = {
-      [HEADING['Event']]: eventData[HEADING['Event']],
-      [HEADING['Dept']]: eventData[HEADING['Dept']]
+      [HEADING['Event']]: this.eventData[HEADING['Event']],
+      [HEADING['Dept']]: this.eventData[HEADING['Dept']],
+      [HEADING['Sorting']]: this.eventData[HEADING['Sorting']]
     };
     this.sheetData.push(newSheetData)
   };
@@ -124,7 +127,7 @@ class SheetEntry {
 
     // Entries for each individual date
     for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.rowData[HEADING['EventID']] = this.entryDict[HEADING['Event']]
+      this.rowData[HEADING['EventID']] = this.rowData[HEADING['Event']]
       this.rowData[HEADING['DateRange']] = date
       this.rowData[HEADING['Sorting']] = date.getTime()
       this._writeRow()
@@ -138,22 +141,35 @@ class SheetEntry {
   };
 
   // Creates and returns a dictionary with all calendar headings as keys.
-  fillRowData(eventData){
+  fillRowData(){
     var rowData = {}
     // Fill rowData with matching values
     for (var index in SHEET_HEADINGS) {
       var heading = SHEET_HEADINGS[index]
       // Add matching data from entry page to calendarDict.
-      if (eventData.hasOwnProperty(heading)) {
-        rowData[heading] = eventData[heading];
+      if (this.eventData.hasOwnProperty(heading)) {
+        rowData[heading] = this.eventData[heading];
       } else {
         rowData[heading] = ''
       }
     }
     return rowData
   };
-};
 
+  // Checks for matching Event Name, Department, and Sorting Number
+  checkDuplicates() {
+    // TODO account for months in a better fashion
+    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
+      return false
+    }
+    for (const entry of this.sheetData) {
+      if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
+        return true; // Match found
+      }
+    }
+    return false; // No match found
+  };
+};
 
 
 // ###################
@@ -165,32 +181,31 @@ function getSheetData() {
   const headerRow = 1; // Assuming the header row is the first row
   const headers = CalendarSheet.getRange(headerRow, 1, 1, CalendarSheet.getLastColumn()).getValues()[0];
 
-  const dataRange = CalendarSheet.getRange(headerRow + 1, 1, CalendarSheet.getLastRow() - headerRow, CalendarSheet.getLastColumn());
+  const numRows = CalendarSheet.getLastRow() - headerRow;
+  const numColumns = CalendarSheet.getLastColumn();
+
+  if (numRows < 1) {
+    // Return blank or an empty array, depending on your preference
+    return []; // or return '';
+  }
+
+  const dataRange = CalendarSheet.getRange(headerRow + 1, 1, numRows, numColumns);
   const eventMatrix = dataRange.getValues();
 
   const eventList = eventMatrix.map(function(row) {
     return {
       [HEADING['Event']]: row[headers.indexOf(HEADING['Event'])],
-      [HEADING['Dept']]: row[headers.indexOf(HEADING['Dept'])]
+      [HEADING['Dept']]: row[headers.indexOf(HEADING['Dept'])],
+      [HEADING['Sorting']]: row[headers.indexOf(HEADING['Sorting'])]
     };
   });
+
+  // Rest of your code
 
   return eventList;
 };
 
-
-
-/*
-// Checks for matching Event Name and Department
-function matchEventData(eventData, sheetData) {
-  for (const entry of sheetData) {
-    if (eventData.HEADING['Dept'] === entry.HEADING['Dept'] && eventData.HEADING['Event'] === entry.HEADING['Event']) {
-      return true; // Match found
-    }
-  }
-  return false; // No match found
-};
-*/
-
 // Documentation Notes for Page
-// Duplicates only checks for Event Name & Department.
+// Duplicates only checks for Event Name & Department & Sorting Number
+
+//TODO split things up into smaller chunks
