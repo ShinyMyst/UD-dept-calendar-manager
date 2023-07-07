@@ -4,18 +4,24 @@
 class GcalEntry {  
   constructor() {
     this.eventData = null;
+    this.calendar = null;
 
   };
 
   // Update class parameters; return false if invalid
   updateData(eventData){
     this.eventData = eventData
+    this.calendar = this._getCalendar()
     return this._validEvent()
   }
 
   // Check if eventData is valid
   _validEvent(){
     switch (true) {
+      case (this.calendar.getEventsForDay(this.eventData[HEADING['StartDate']], {search: this.eventData[HEADING['Event']]}).length > 0):
+        Logger.log("Event already in Gcal.")
+        return false
+
       default:
         return true
     }
@@ -27,18 +33,16 @@ class GcalEntry {
     if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
       return
     }
-    var calendar = this._getCalendar()
     //var dates = this._getDateRange()
     var dates = this._getDates()
     var description = this._getDescription()
     var title = this.eventData[HEADING['Event']]
 
     if (this.eventData[HEADING['StartTime']]){
-      var event = calendar.createEvent(title, ...dates);
+      var event = this.calendar.createEvent(title, ...dates);
     }
     else {
-      console.log(calendar)
-      var event = calendar.createAllDayEvent(title, ...dates);
+      var event = this.calendar.createAllDayEvent(title, ...dates);
     }
     event.setDescription(description);
     
