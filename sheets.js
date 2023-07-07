@@ -1,12 +1,11 @@
 // ###################
 // Sheet
 // ###################
-
 class SheetEntry {
   constructor() {
     this.sheetData = getSheetData()
-    this.rowData = null
     this.eventData = null
+    this.rowData = null
   };
 
   // ========================================
@@ -19,7 +18,34 @@ class SheetEntry {
     return this._validEvent()
   };
 
-  // Check if this.eventData is valid
+  // Add event data to last row of sheet and to sheetData
+  addEvent(){
+    this.rowData = this._fillRowData(this.eventData)
+    this._fillRowDates()
+    this._writeRow() 
+    this._updateSheetData()
+  };
+
+  // Sorts dates in the proper order & ensures groupings are retained correctly.
+  sortSheet(){
+    var lastColumn = CalendarSheet.getLastColumn();
+    const range = CalendarSheet.getRange(2, 1, CalendarSheet.getLastRow() - 1, lastColumn);
+    range.sort({column: lastColumn, ascending: true});
+  };
+
+  _updateSheetData() {
+    var newSheetData = {
+      [HEADING['Event']]: this.eventData[HEADING['Event']],
+      [HEADING['Dept']]: this.eventData[HEADING['Dept']],
+      [HEADING['Sorting']]: this.eventData[HEADING['Sorting']]
+    };
+    this.sheetData.push(newSheetData)
+  }
+
+  // ========================================
+  // ===== Event Validation             =====
+  // ========================================
+    // Check if this.eventData is valid
   _validEvent(){
     switch (true) {
       // Duplicate Entry
@@ -31,49 +57,42 @@ class SheetEntry {
     }
   };
 
-  // Add event data to last row of sheet and to sheetData
-  addEvent(){
-    this.rowData = this._fillRowData(this.eventData)
-    this._fillRowDates()
-    this._writeRow() 
-
-    // Add the new entry to the list of events
-    var newSheetData = {
-      [HEADING['Event']]: this.eventData[HEADING['Event']],
-      [HEADING['Dept']]: this.eventData[HEADING['Dept']],
-      [HEADING['Sorting']]: this.eventData[HEADING['Sorting']]
-    };
-    this.sheetData.push(newSheetData)
-  };
-
-  // Sorts dates in the proper order & ensures groupings are retained correctly.
-  sortSheet(){
-    var lastColumn = CalendarSheet.getLastColumn();
-    const range = CalendarSheet.getRange(2, 1, CalendarSheet.getLastRow() - 1, lastColumn);
-    range.sort({column: lastColumn, ascending: true});
+  // Checks for matching Event Name, Department, and Sorting Number
+  checkDuplicates() {
+    // TODO - we don't actually check for duplicates if date is a singular month...
+    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
+      return false
+    }
+    for (const entry of this.sheetData) {
+      if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
+        return true; // Match found
+      }
+    }
+    return false; // No match found
   };
 
   // ========================================
-  // ===== Writing and Deleting Entries =====
+  // ===== Writing data to the sheet    =====
   // ========================================
-
-  // WRITES the data onto the sheet
+  // Write the data onto the sheet
   _writeRow() {
     var lastRow = CalendarSheet.getLastRow();
     var newRow = [];
 
+    // Saves row data
     for (var heading in this.rowData){
       newRow.push(this.rowData[heading])
     }
 
+    // Write saved row data to sheet
     const columnStart = 1
     const columnEnd = newRow.length
     const amountRows = 1
     CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
   };
 
-
-  // Creates and returns a dictionary with all calendar headings as keys.
+  // Creates dict of all the data that needs added to the row.
+  // Uses all calendar headings from the eventData as keys.
   _fillRowData(){
     var rowData = {}
     // Fill rowData with matching values
@@ -89,7 +108,7 @@ class SheetEntry {
     return rowData
   };
 
-  // Adds information about dates to the row to be wr
+  // Adds information about dates 
   _fillRowDates(){
     var startDate = this.eventData[HEADING['StartDate']]
     var endDate = this.eventData[HEADING['EndDate']]
@@ -112,22 +131,7 @@ class SheetEntry {
         this.rowData[HEADING['Sorting']] = startDate.getTime()    
     }
   };
-
-  // Checks for matching Event Name, Department, and Sorting Number
-  checkDuplicates() {
-    // TODO account for months in a better fashion
-    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
-      return false
-    }
-    for (const entry of this.sheetData) {
-      if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
-        return true; // Match found
-      }
-    }
-    return false; // No match found
-  };
 };
-
 
 // ###################
 // Helper Functions
