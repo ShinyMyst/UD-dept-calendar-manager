@@ -1,9 +1,6 @@
 // ###################
-// Entry Class
+// Sheet
 // ###################
-
-//TODO - Try adding a create Sorting ID function.
-// This could simplify later function and allow date checking for duplicates
 
 class SheetEntry {
   constructor() {
@@ -11,6 +8,7 @@ class SheetEntry {
     this.rowData = null
     this.eventData = null
   };
+
   // ========================================
   // ===== Public Functions =====
   // ========================================
@@ -35,30 +33,9 @@ class SheetEntry {
 
   // Add event data to last row of sheet and to sheetData
   addEvent(){
-    this.rowData = this.fillRowData(this.eventData)
-
-    // Variables for readability
-    const startDate = this.eventData[HEADING['StartDate']]
-    const endDate = this.eventData[HEADING['EndDate']]
-
-    // Write Entry
-    switch (true) {
-      // Singular Month
-      case MONTHS.includes(startDate):
-        this._writeSingularMonth(startDate);
-        break;
-      // Singular Date
-      case endDate === '':
-        this._writeSingularDate(startDate);
-        break;
-      case startDate.getTime() == endDate.getTime():
-        this._writeSingularDate(startDate);
-        break;
-      // Date Range
-      default:
-        this._writeDateRange(startDate, endDate);
-        break;
-    }  
+    this.rowData = this._fillRowData(this.eventData)
+    this._fillRowDates()
+    this._writeRow() 
 
     // Add the new entry to the list of events
     var newSheetData = {
@@ -76,7 +53,6 @@ class SheetEntry {
     range.sort({column: lastColumn, ascending: true});
   };
 
-// TODO - Try to reorganize this section
   // ========================================
   // ===== Writing and Deleting Entries =====
   // ========================================
@@ -96,52 +72,9 @@ class SheetEntry {
     CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
   };
 
-// TODO - Try to reorganize this section
-  // ========================================
-  // ===== Types of Dates to Write =====
-  // ========================================
-  _writeSingularMonth(START){
-  const date = new Date(`${START} 1, ${new Date().getFullYear()}`);   // Create Date object.
-  this.rowData[HEADING['DateRange']] = START
-  this.rowData[HEADING['Sorting']] = date.getTime() - 1
-  this._writeRow()
-  };
-
-  _writeSingularDate(START){
-    this.rowData[HEADING['DateRange']] = START
-    this.rowData[HEADING['Sorting']] = START.getTime()
-    this._writeRow()
-  };
-
-  _writeDateRange(START, END){
-    // Helper function for making a date string
-    function createDateString(start, end){
-      var startMonth = start.toLocaleString('default', { month: 'long' });
-      var endMonth = end.toLocaleString('default', { month: 'long' });
-      var startDay = start.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
-      var endDay = end.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
-
-      const dateString = startMonth + ' ' + startDay + ' - ' + endMonth + ' ' + endDay;
-      return dateString;
-      };
-
-    // Entries for each individual date
-    for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.rowData[HEADING['EventID']] = this.rowData[HEADING['Event']]
-      this.rowData[HEADING['DateRange']] = date
-      this.rowData[HEADING['Sorting']] = date.getTime()
-      this._writeRow()
-      }
-    // Singular entry for date range
-    const dateString = createDateString(START, END)
-    this.rowData[HEADING['EventID']] = ''
-    this.rowData[HEADING['DateRange']] = dateString
-    this.rowData[HEADING['Sorting']] = START.getTime() - 1
-    this._writeRow()
-  };
 
   // Creates and returns a dictionary with all calendar headings as keys.
-  fillRowData(){
+  _fillRowData(){
     var rowData = {}
     // Fill rowData with matching values
     for (var index in SHEET_HEADINGS) {
@@ -154,6 +87,30 @@ class SheetEntry {
       }
     }
     return rowData
+  };
+
+  // Adds information about dates to the row to be wr
+  _fillRowDates(){
+    var startDate = this.eventData[HEADING['StartDate']]
+    var endDate = this.eventData[HEADING['EndDate']]
+    this.rowData[HEADING['EndDate']] = ''
+
+    switch (true) {
+      // Month Only
+      case MONTHS.includes(startDate):
+        const date = new Date(`${startDate} 1, ${new Date().getFullYear()}`);   // Create Date object for sorting
+        this.rowData[HEADING['Sorting']] = date.getTime() - 2       
+        break;
+      
+      // Spanning Dates
+      case startDate.getTime() != endDate.getTime():
+        this.rowData[HEADING['EndDate']] = endDate
+        this.rowData[HEADING['Sorting']] = startDate.getTime() - 1       
+
+      // Default 
+      default:
+        this.rowData[HEADING['Sorting']] = startDate.getTime()    
+    }
   };
 
   // Checks for matching Event Name, Department, and Sorting Number
@@ -200,12 +157,8 @@ function getSheetData() {
     };
   });
 
-  // Rest of your code
-
   return eventList;
 };
 
 // Documentation Notes for Page
 // Duplicates only checks for Event Name & Department & Sorting Number
-
-//TODO split things up into smaller chunks

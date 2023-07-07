@@ -1,5 +1,5 @@
 // ###################
-// Input Class
+// Input 
 // ###################
 class InputEntry {  
   constructor() {
@@ -25,6 +25,13 @@ class InputEntry {
         return false
 
       // ERRORS //
+      // End Date before start date
+      case (eventData[HEADING['EndDate']].getTime() < eventData[HEADING['StartDate']].getTime()):
+        Logger.log("ERROR - End date before start date.")
+        this.highlightRow('red')
+        this.rowIndex ++
+        return false      
+
       // No Start Date
       case !eventData[HEADING['StartDate']]:
         Logger.log("ERROR - No start date chosen.")

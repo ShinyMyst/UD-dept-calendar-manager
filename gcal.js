@@ -1,3 +1,6 @@
+// ###################
+// Gcal
+// ###################
 class GcalEntry {  
   constructor() {
     this.eventData = null;
@@ -34,6 +37,7 @@ class GcalEntry {
       var event = calendar.createEvent(title, ...dates);
     }
     else {
+      console.log(calendar)
       var event = calendar.createAllDayEvent(title, ...dates);
     }
     event.setDescription(description);
@@ -104,9 +108,12 @@ class GcalEntry {
 
       case CALENDAR_NAME['Employment']:
         return CALENDAR_LINK['Employment']
+
+      case CALENDAR_NAME['Experimental']:
+        return CALENDAR_LINK['Experimental']
       
       default:
-        return CALENDAR_LINK['General'] 
+        return CALENDAR_LINK['DeptCal'] 
     }
   };
 
