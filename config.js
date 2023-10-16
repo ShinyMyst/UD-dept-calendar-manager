@@ -1,7 +1,11 @@
 // ###################
+// Config
+// ###################
+
+// ###################
 // Manual Entry
 // ###################
-const spreadsheetId = 'i'
+const spreadsheetId = '1IfsuG-r40DGlyBh4jF-IpbOze0dM0_qeMMF7joS-5iA'
 const configPageName = "config"
 
 const MONTHS = [
@@ -68,23 +72,25 @@ const SHEET_HEADINGS = getHeadingRange(CalendarSheet)
 // ===== Information about Google Calendars ==
 // ==========================================
 const CALENDAR_NAME = {
-  'General': getCell('A6'),
+  'DeptCal': getCell('A6'),
   'Operations': getCell('A7'),
   'ResLife': getCell('A8'),
   'Conferences': getCell('A9'),
   'Training': getCell('A10'),
   'AVIATE': getCell('A11'),
-  'Employment': getCell('A12')
+  'Employment': getCell('A12'),
+  'Experimental': getCell('A13')
 }
 
 const CALENDAR_LINK = {
-  'General': CalendarApp.getCalendarById(getCell('B6')),
+  'DeptCal': CalendarApp.getCalendarById(getCell('B6')),
   'Operations': CalendarApp.getCalendarById(getCell('B7')),
   'ResLife': CalendarApp.getCalendarById(getCell('B8')),
   'Conferences': CalendarApp.getCalendarById(getCell('B9')),
   'Training': CalendarApp.getCalendarById(getCell('B10')),
   'AVIATE': CalendarApp.getCalendarById(getCell('B11')),
-  'Employment': CalendarApp.getCalendarById(getCell('B12'))
+  'Employment': CalendarApp.getCalendarById(getCell('B12')),
+  'Experimental': CalendarApp.getCalendarById(getCell('B13'))
 }
 
 // ========================================

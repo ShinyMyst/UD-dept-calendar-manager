@@ -1,16 +1,13 @@
 // ###################
-// Entry Class
+// Sheet
 // ###################
-
-//TODO - Try adding a create Sorting ID function.
-// This could simplify later function and allow date checking for duplicates
-
 class SheetEntry {
   constructor() {
     this.sheetData = getSheetData()
-    this.rowData = null
     this.eventData = null
+    this.rowData = null
   };
+
   // ========================================
   // ===== Public Functions =====
   // ========================================
@@ -21,7 +18,34 @@ class SheetEntry {
     return this._validEvent()
   };
 
-  // Check if this.eventData is valid
+  // Add event data to last row of sheet and to sheetData
+  addEvent(){
+    this.rowData = this._fillRowData(this.eventData)
+    this._fillRowDates()
+    this._writeRow() 
+    this._updateSheetData()
+  };
+
+  // Sorts dates in the proper order & ensures groupings are retained correctly.
+  sortSheet(){
+    var lastColumn = CalendarSheet.getLastColumn();
+    const range = CalendarSheet.getRange(2, 1, CalendarSheet.getLastRow() - 1, lastColumn);
+    range.sort({column: lastColumn, ascending: true});
+  };
+
+  _updateSheetData() {
+    var newSheetData = {
+      [HEADING['Event']]: this.eventData[HEADING['Event']],
+      [HEADING['Dept']]: this.eventData[HEADING['Dept']],
+      [HEADING['Sorting']]: this.eventData[HEADING['Sorting']]
+    };
+    this.sheetData.push(newSheetData)
+  }
+
+  // ========================================
+  // ===== Event Validation             =====
+  // ========================================
+    // Check if this.eventData is valid
   _validEvent(){
     switch (true) {
       // Duplicate Entry
@@ -33,115 +57,43 @@ class SheetEntry {
     }
   };
 
-  // Add event data to last row of sheet and to sheetData
-  addEvent(){
-    this.rowData = this.fillRowData(this.eventData)
-
-    // Variables for readability
-    const startDate = this.eventData[HEADING['StartDate']]
-    const endDate = this.eventData[HEADING['EndDate']]
-
-    // Write Entry
-    switch (true) {
-      // Singular Month
-      case MONTHS.includes(startDate):
-        this._writeSingularMonth(startDate);
-        break;
-      // Singular Date
-      case endDate === '':
-        this._writeSingularDate(startDate);
-        break;
-      case startDate.getTime() == endDate.getTime():
-        this._writeSingularDate(startDate);
-        break;
-      // Date Range
-      default:
-        this._writeDateRange(startDate, endDate);
-        break;
-    }  
-
-    // Add the new entry to the list of events
-    var newSheetData = {
-      [HEADING['Event']]: this.eventData[HEADING['Event']],
-      [HEADING['Dept']]: this.eventData[HEADING['Dept']],
-      [HEADING['Sorting']]: this.eventData[HEADING['Sorting']]
-    };
-    this.sheetData.push(newSheetData)
+  // Checks for matching Event Name, Department, and Sorting Number
+  checkDuplicates() {
+    // TODO - we don't actually check for duplicates if date is a singular month...
+    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
+      return false
+    }
+    for (const entry of this.sheetData) {
+      if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
+        return true; // Match found
+      }
+    }
+    return false; // No match found
   };
 
-  // Sorts dates in the proper order & ensures groupings are retained correctly.
-  sortSheet(){
-    var lastColumn = CalendarSheet.getLastColumn();
-    const range = CalendarSheet.getRange(2, 1, CalendarSheet.getLastRow() - 1, lastColumn);
-    range.sort({column: lastColumn, ascending: true});
-  };
-
-// TODO - Try to reorganize this section
   // ========================================
-  // ===== Writing and Deleting Entries =====
+  // ===== Writing data to the sheet    =====
   // ========================================
-
-  // WRITES the data onto the sheet
+  // Write the data onto the sheet
   _writeRow() {
     var lastRow = CalendarSheet.getLastRow();
     var newRow = [];
 
+    // Saves row data
     for (var heading in this.rowData){
       newRow.push(this.rowData[heading])
     }
 
+    // Write saved row data to sheet
     const columnStart = 1
     const columnEnd = newRow.length
     const amountRows = 1
     CalendarSheet.getRange(lastRow+1, columnStart, amountRows, columnEnd).setValues([newRow])
   };
 
-// TODO - Try to reorganize this section
-  // ========================================
-  // ===== Types of Dates to Write =====
-  // ========================================
-  _writeSingularMonth(START){
-  const date = new Date(`${START} 1, ${new Date().getFullYear()}`);   // Create Date object.
-  this.rowData[HEADING['DateRange']] = START
-  this.rowData[HEADING['Sorting']] = date.getTime() - 1
-  this._writeRow()
-  };
-
-  _writeSingularDate(START){
-    this.rowData[HEADING['DateRange']] = START
-    this.rowData[HEADING['Sorting']] = START.getTime()
-    this._writeRow()
-  };
-
-  _writeDateRange(START, END){
-    // Helper function for making a date string
-    function createDateString(start, end){
-      var startMonth = start.toLocaleString('default', { month: 'long' });
-      var endMonth = end.toLocaleString('default', { month: 'long' });
-      var startDay = start.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
-      var endDay = end.toLocaleString('default', { day: 'numeric', ordinal: 'numeric' });
-
-      const dateString = startMonth + ' ' + startDay + ' - ' + endMonth + ' ' + endDay;
-      return dateString;
-      };
-
-    // Entries for each individual date
-    for (let date = new Date(START); date <= END; date.setDate(date.getDate() + 1)) {
-      this.rowData[HEADING['EventID']] = this.rowData[HEADING['Event']]
-      this.rowData[HEADING['DateRange']] = date
-      this.rowData[HEADING['Sorting']] = date.getTime()
-      this._writeRow()
-      }
-    // Singular entry for date range
-    const dateString = createDateString(START, END)
-    this.rowData[HEADING['EventID']] = ''
-    this.rowData[HEADING['DateRange']] = dateString
-    this.rowData[HEADING['Sorting']] = START.getTime() - 1
-    this._writeRow()
-  };
-
-  // Creates and returns a dictionary with all calendar headings as keys.
-  fillRowData(){
+  // Creates dict of all the data that needs added to the row.
+  // Uses all calendar headings from the eventData as keys.
+  _fillRowData(){
     var rowData = {}
     // Fill rowData with matching values
     for (var index in SHEET_HEADINGS) {
@@ -156,21 +108,30 @@ class SheetEntry {
     return rowData
   };
 
-  // Checks for matching Event Name, Department, and Sorting Number
-  checkDuplicates() {
-    // TODO account for months in a better fashion
-    if (MONTHS.includes(this.eventData[HEADING['StartDate']])){
-      return false
+  // Adds information about dates 
+  _fillRowDates(){
+    var startDate = this.eventData[HEADING['StartDate']]
+    var endDate = this.eventData[HEADING['EndDate']]
+    this.rowData[HEADING['EndDate']] = ''
+
+    switch (true) {
+      // Month Only
+      case MONTHS.includes(startDate):
+        const date = new Date(`${startDate} 1, ${new Date().getFullYear()}`);   // Create Date object for sorting
+        this.rowData[HEADING['Sorting']] = date.getTime() - 2       
+        break;
+      
+      // Spanning Dates
+      case startDate.getTime() != endDate.getTime():
+        this.rowData[HEADING['EndDate']] = endDate
+        this.rowData[HEADING['Sorting']] = startDate.getTime() - 1       
+
+      // Default 
+      default:
+        this.rowData[HEADING['Sorting']] = startDate.getTime()    
     }
-    for (const entry of this.sheetData) {
-      if (this.eventData[HEADING['Dept']] === entry[HEADING['Dept']] && this.eventData[HEADING['Event']] === entry[HEADING['Event']] && this.eventData[HEADING['StartDate']].getTime() === entry[HEADING['Sorting']]) {
-        return true; // Match found
-      }
-    }
-    return false; // No match found
   };
 };
-
 
 // ###################
 // Helper Functions
@@ -200,12 +161,8 @@ function getSheetData() {
     };
   });
 
-  // Rest of your code
-
   return eventList;
 };
 
 // Documentation Notes for Page
 // Duplicates only checks for Event Name & Department & Sorting Number
-
-//TODO split things up into smaller chunks

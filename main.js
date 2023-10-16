@@ -1,3 +1,6 @@
+// ###################
+// Main 
+// ###################
 // Checks for completed entries on entry page & adds them to Calendar Page and Gcal.
 function main(){
   input = new InputEntry()
@@ -10,7 +13,6 @@ function main(){
     // Pair heading name with corresponding row value
     var curEventData = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));
     Logger.log(`===== ${curEventData[HEADING['Event']]} =====`);
-
 
   // ============================
   // ===== Update & Validate ====
@@ -39,7 +41,7 @@ function main(){
       Logger.log("Added to Gcal")
     }
     else {
-      Logger.log('No calendar requested.')
+      Logger.log('No calendar listed.')
     }
     input.deleteRow()
   };
@@ -47,13 +49,14 @@ function main(){
 };
 
 
-// MAIN SHEET
-// TODO, Add dropdown options on Input Page
-// Rearrange Headings and titles 
-
 // Refactor
 // TODO - Duplicates are only caught for existing entries, not those added in same batch
-// TODO restructure the HEADING with just single variables
-// Actually refactor code
+// Check for duplicates on Gcal
+// Description not undefined
+// Remove need for getCal function
+// Refactor error checking
+// Reorganize sheets
 
+// Data validation - input should follow same format.  Seperate things like empty row checks if needed
+// so long as color and increment row appears same as with other validations
 
