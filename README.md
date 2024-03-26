@@ -26,4 +26,12 @@ The script will check compare versions of the event on the calendar and on the s
 It will prioritize the details written on the most recently updated location.
 Spreadsheet edits can be detected as soon as they occur.
 Calendar edits occur periodically.
+
+### Row 1 Requirements
+UD functions work under the assumption that row 1 includes your heads
+
+### Set-Up
+All UD lib files require you to include the sheet url as well as the page name of the page you're looking at and editing.
+
 */
+
