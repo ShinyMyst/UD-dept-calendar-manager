@@ -1,62 +1,47 @@
 // ###################
-// Main 
+// Triggered Functions 
 // ###################
-// Checks for completed entries on entry page & adds them to Calendar Page and Gcal.
+// Triggered periodically
 function main(){
-  input = new InputEntry()
-  sheet = new SheetEntry()
-  gcal = new GcalEntry()
-
-  const entries = input.getEnteredData()
-
-  for (const row of entries) {
-    // Pair heading name with corresponding row value
-    var curEventData = Object.fromEntries(INPUT_HEADINGS.map((key, i) => [key, row[i]]));
-    Logger.log(`===== ${curEventData[HEADING['Event']]} =====`);
-
-  // ============================
-  // ===== Update & Validate ====
-  // ============================
-    if (!input.updateData(curEventData)){
-      continue
-    }
-    if (!sheet.updateData(curEventData)){
-      input.highlightRow('orange')
-      input.incrementRow()
-      continue
-    };
-    if (!gcal.updateData(curEventData)){
-      input.highlightRow('blue')
-      input.incrementRow()
-      continue
-    };
-
-    // ==========================
-    // ===== Add Entries =====
-    // ==========================
-    sheet.addEvent()
-    Logger.log("Added to sheet.")
-    if (curEventData['Calendar']){
-      gcal.addEvent()
-      Logger.log("Added to Gcal")
-    }
-    else {
-      Logger.log('No calendar listed.')
-    }
-    input.deleteRow()
-  };
-  sheet.sortSheet()
+  process_unpaired_events();
+  process_paired_events();
 };
 
 
-// Refactor
-// TODO - Duplicates are only caught for existing entries, not those added in same batch
-// Check for duplicates on Gcal
-// Description not undefined
-// Remove need for getCal function
-// Refactor error checking
-// Reorganize sheets
 
-// Data validation - input should follow same format.  Seperate things like empty row checks if needed
-// so long as color and increment row appears same as with other validations
+// Triggered on edit
+function update_last_edit() {
+  // Update the last edited time column to match when row was last edited.
+  // Update the corresponding calendar event
+  // If for some reason the calendar event has a newer edit date than the spreadsheet...
+};
+
+// ###################
+// Supporting Functions 
+// ###################
+
+
+// Checks the last edited times of spreadsheet and calendar events
+// Updates information to match the most  recently updated version
+function process_paired_events(){
+
+};
+
+
+function process_unpaired_events(scope){
+  // Default scope should be 30 days
+  // Event name is a unique key
+  // Creates a list of all event names in calendars
+  // Creates a list of all event names in spreadsheet
+  // If event exists in one but not the other, adds a copy where it is missing
+  gather_event_gcal(calendar);
+  gather_event_spreadsheet();
+  unpaired_events = compare_events();
+  add_event_gcal();
+  add_event_spreadsheet();
+  // make sure to update edit times to match cal edit time
+};
+
+// Deleted calendar event caught by spreadsheet having an invalid link to event (as opposed to none)
+// Deleted spreadsheet event caught by edit detection.
 

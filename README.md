@@ -1,16 +1,29 @@
-# Dept Calendar Manager
-Assists with management of Departmental Calendar by adding new dates to the SpreadSheet and Google Calendar.
+/*
+### The syncing process
+Speadsheet uses the link column to determine if a corresponding event exists within the Google Calendar.
+Google Calendar uses a custom hidden "extendedProperty" boolean to track whether or not it exists within the spreadsheet.
 
-### Adding Entries
-To add entries, users check the box on the Input page of the Calendar Spreadsheet.  Entries with the checkmark will be added to the Calendar Spreadsheet page as well as a Google Calendar.
+When syncing events unpaired events, the script will look at both of these fields to determine whether or not event exists.
+This means duplicate events of the same name are allowed and most be removed manually.
 
-### Calendar Spreadsheet
-When adding events to the Spreadsheet, script will read the input page.  If the event does not already exist, it copies over the data and sorts it based on a date value.  The entry is then deleted from InputSheet if it was added.
+### Multiple calendars
+If you want an event to exist in multiple calendars, multiple entries must exist within the spreadsheet.
+Each copy of the event will link to its corresponding calendar version of the event
 
-Single dates are added as is.  Dates that consist of a singular month are sorted as if they were the 1st day of the month -1 to the date value to put them on the top.  Dates that span a range act a bit differently.  One entry is created with the date range itself listed.  A series of individual events are created as well and given an ID with the event name.  This allows users the choice of viewing only the range or viewing them spread out (as requested).
+### Entering events on spreadsheet
+Fill out whatever fields you want but do NOT touch last edited OR link fields.  These are used internally by the script.
+The only date field that MUST be filled out is the start date.  Month can be infered and the end date will match start unless told otherwise.
 
-### Google Calendar
-Multiple Google calendars are specified on the Configuration page.  Events are placed based on which Department they are tagged as.  If one of the three main Departments are not specified, it goes into the general calendar intead.  (We wanted to avoid too many calendars so limited it to the main ones.)  Before creating a new event, script checks if event is already added.
+### Entering events on calendar
+Do whatever you want.
 
-### Configuration
-Configuration page exists on the Spreadsheet allowing users to easily change variables.  Config page in the script gets its values from there.
+### Duplicate Events (written in both locations)
+If you put the same event in the Google calendar AND on the spreadsheet, the script will process each as a different event.
+You will need to manually delete the duplicate version that you do not want.
+
+### Editing Events
+The script will check compare versions of the event on the calendar and on the spreadsheet.
+It will prioritize the details written on the most recently updated location.
+Spreadsheet edits can be detected as soon as they occur.
+Calendar edits occur periodically.
+*/
